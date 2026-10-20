@@ -17,7 +17,7 @@ guiados, executa os scripts Perl em subprocessos, acompanha o progresso, grava l
 mantém o histórico de cada ferramenta.
 
 **Repositório oficial:** <https://github.com/emileite/turbo-imap>  
-**Site oficial:** <https://emileite.github.io/turbo-imap/>  
+**Site oficial:** [English](https://emileite.github.io/turbo-imap/) | [Português](https://emileite.github.io/turbo-imap/pt.html)  
 **Downloads:** [Releases](https://github.com/emileite/turbo-imap/releases)
 
 ---

@@ -20,7 +20,7 @@ The interface follows the computer language: **Portuguese (`pt-BR`)** when the s
 language is Portuguese, otherwise **English (`en`)**.
 
 **Official repository:** <https://github.com/emileite/turbo-imap>  
-**Website:** <https://emileite.github.io/turbo-imap/>  
+**Website:** [English](https://emileite.github.io/turbo-imap/) | [Português](https://emileite.github.io/turbo-imap/pt.html)  
 **Downloads:** [Releases](https://github.com/emileite/turbo-imap/releases)
 
 ---
