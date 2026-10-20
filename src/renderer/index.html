@@ -1,0 +1,407 @@
+<!doctype html>
+<html lang="pt-BR" data-theme="light">
+  <head>
+    <meta charset="utf-8">
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self'; font-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'"
+    >
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Turbo IMAP</title>
+    <link rel="stylesheet" href="vendor/bulma.min.css">
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="app-sidebar">
+        <div class="brand">
+          <img src="../../assets/logo.png" alt="Logo do Turbo IMAP" class="brand-logo">
+          <div class="brand-text">
+            <h1>Turbo IMAP</h1>
+            <p>Migração de e-mail</p>
+          </div>
+        </div>
+
+        <p class="menu-label">Categorias</p>
+        <ul id="tool-nav" class="tool-nav" aria-label="Ferramentas disponíveis"></ul>
+
+        <div class="sidebar-footer">
+          <span id="perl-indicator" class="tag is-light is-fullwidth">Verificando Perl...</span>
+          <button id="btn-open-logs" class="button is-small is-ghost is-fullwidth" type="button">
+            Abrir pasta de logs
+          </button>
+          <p id="sidebar-hint" class="sidebar-hint">Dados salvos localmente em SQLite.</p>
+        </div>
+      </aside>
+
+      <div class="app-body">
+        <header class="topbar">
+          <div class="topbar-title">
+            <span id="topbar-kicker" class="topbar-kicker">Turbo IMAP</span>
+            <strong id="topbar-tool">Carregando...</strong>
+          </div>
+          <div class="topbar-actions">
+            <span id="connection-warning" class="tag is-warning is-light is-hidden"></span>
+            <span id="run-pill" class="tag is-light">Ocioso</span>
+          </div>
+        </header>
+
+        <main class="app-main">
+          <section id="hero" class="hero-panel">
+            <div class="hero-copy">
+              <p id="hero-kicker" class="hero-kicker">Ferramenta</p>
+              <h2 id="hero-title">Carregando...</h2>
+              <p id="hero-description"></p>
+              <p id="hero-notes" class="hero-notes"></p>
+            </div>
+            <div class="hero-status">
+              <span class="status-label">Última execução</span>
+              <span id="last-status" class="tag is-light">Nunca executado</span>
+              <span id="last-run-date" class="status-date">Sem registros</span>
+            </div>
+          </section>
+
+          <section id="thunderbird-instructions" class="instructions-panel is-hidden">
+            <div class="instructions-head">
+              <div>
+                <p class="instructions-kicker">Thunderbird</p>
+                <h3>Como carregar as mensagens no Thunderbird</h3>
+              </div>
+              <span class="tag is-success is-light">Formato Mbox nativo</span>
+            </div>
+
+            <div class="instructions-grid">
+              <article class="instruction-card is-recommended">
+                <h4>Opção 1 — abrir direto nas Pastas Locais (recomendada)</h4>
+                <ol>
+                  <li>Feche o Thunderbird completamente.</li>
+                  <li>No Turbo IMAP, use como destino a pasta <code>Mail\Local Folders</code> do perfil.</li>
+                  <li>Mantenha um prefixo como <code>TurboIMAP-</code> para não sobrescrever pastas existentes.</li>
+                  <li>Execute o backup e abra o Thunderbird.</li>
+                  <li>As pastas aparecerão em <strong>Pastas locais</strong> como <code>TurboIMAP-INBOX</code>, <code>TurboIMAP-Sent</code>, etc.</li>
+                </ol>
+              </article>
+
+              <article class="instruction-card">
+                <h4>Opção 2 — exportar e importar depois</h4>
+                <ol>
+                  <li>Escolha uma pasta de backup comum como destino.</li>
+                  <li>Execute o backup para gerar os arquivos Mbox.</li>
+                  <li>No Thunderbird, instale a extensão <strong>ImportExportTools NG</strong>.</li>
+                  <li>Clique com o botão direito em <strong>Pastas locais</strong>.</li>
+                  <li>Escolha <code>ImportExportTools NG &gt; Importar arquivo mbox</code> e selecione os arquivos.</li>
+                </ol>
+              </article>
+            </div>
+
+            <p class="instructions-note">
+              Feche o Thunderbird antes de gravar diretamente em <code>Mail\Local Folders</code>.
+              A data final do filtro é inclusiva. Um guia completo também é salvo na pasta de
+              destino como <code>LEIA-ME-THUNDERBIRD.txt</code>.
+            </p>
+          </section>
+
+          <div class="columns is-variable is-5 content-grid">
+            <div class="column is-7-desktop is-12-tablet">
+              <div class="box form-box">
+                <form id="tool-form" novalidate>
+                  <div class="section-heading">
+                    <h3>Credenciais</h3>
+                    <p>As senhas ficam no banco local e não são gravadas nos logs.</p>
+                  </div>
+
+                  <div class="columns is-variable is-4 credential-columns">
+                    <div class="column" id="source-column">
+                      <h4 class="credential-title">
+                        <span class="credential-dot source-dot"></span>
+                        <span id="source-title">Origem</span>
+                      </h4>
+                      <div class="field" id="source-host-field">
+                        <label id="source-host-label" class="label" for="source-host">Servidor IMAP</label>
+                        <div class="control">
+                          <input id="source-host" class="input" type="text" placeholder="imap.origem.com" autocomplete="off">
+                        </div>
+                      </div>
+                      <div class="field">
+                        <label id="source-user-label" class="label" for="source-user">Usuário</label>
+                        <div class="control">
+                          <input id="source-user" class="input" type="text" placeholder="usuario@origem.com" autocomplete="off">
+                        </div>
+                      </div>
+                      <div class="field">
+                        <label id="source-pass-label" class="label" for="source-pass">Senha ou token OAuth2</label>
+                        <div class="control">
+                          <input id="source-pass" class="input" type="password" autocomplete="off">
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="column" id="dest-column">
+                      <h4 class="credential-title">
+                        <span class="credential-dot dest-dot"></span>
+                        <span id="dest-title">Destino</span>
+                      </h4>
+                      <div class="field" id="dest-host-field">
+                        <label id="dest-host-label" class="label" for="dest-host">Servidor IMAP</label>
+                        <div class="control">
+                          <input id="dest-host" class="input" type="text" placeholder="imap.destino.com" autocomplete="off">
+                        </div>
+                      </div>
+                      <div class="field">
+                        <label id="dest-user-label" class="label" for="dest-user">Usuário</label>
+                        <div class="control">
+                          <input id="dest-user" class="input" type="text" placeholder="usuario@destino.com" autocomplete="off">
+                        </div>
+                      </div>
+                      <div class="field">
+                        <label id="dest-pass-label" class="label" for="dest-pass">Senha ou token OAuth2</label>
+                        <div class="control">
+                          <input id="dest-pass" class="input" type="password" autocomplete="off">
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="field show-passwords-field">
+                    <label class="checkbox" for="show-passwords">
+                      <input id="show-passwords" type="checkbox">
+                      Mostrar senhas
+                    </label>
+                  </div>
+
+                  <hr class="form-divider">
+
+                  <div class="resume-box">
+                    <label class="checkbox" for="resume">
+                      <input id="resume" type="checkbox">
+                      <span id="resume-label">Continuar de onde parou (Resume)</span>
+                    </label>
+                    <p id="resume-note" class="help"></p>
+                  </div>
+
+                  <hr class="form-divider">
+
+                  <div class="section-heading">
+                    <h3>Opções</h3>
+                    <p id="options-hint">Ajuste os parâmetros específicos desta ferramenta.</p>
+                  </div>
+
+                  <div id="options-fields" class="options-grid"></div>
+
+                  <div class="form-actions">
+                    <button id="btn-run" class="button is-primary is-medium" type="submit">
+                      Executar
+                    </button>
+                    <button id="btn-stop" class="button is-danger is-medium is-hidden" type="button">
+                      Interromper
+                    </button>
+                    <button id="btn-save" class="button is-light is-medium" type="button">
+                      Salvar configuração
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+
+            <div class="column is-5-desktop is-12-tablet">
+              <div class="box status-box">
+                <div class="status-box-header">
+                  <div>
+                    <h3>Resumo da execução</h3>
+                    <p id="run-started" class="status-date">Nenhum processo ativo</p>
+                  </div>
+                  <span id="run-state" class="tag is-light">Aguardando</span>
+                </div>
+
+                <div class="progress-wrap">
+                  <progress id="progress-bar" class="progress is-primary" max="100"></progress>
+                  <div class="progress-meta">
+                    <span id="progress-label">Aguardando início</span>
+                    <span id="progress-percent">0%</span>
+                  </div>
+                </div>
+
+                <p id="summary-empty" class="summary-empty">
+                  O resumo da execução aparecerá aqui assim que a ferramenta começar.
+                </p>
+
+                <div id="summary-content" class="summary-content is-hidden">
+                  <div class="summary-grid">
+                    <div class="summary-tile">
+                      <span id="summary-messages-label" class="summary-label">Mensagens</span>
+                      <strong id="summary-messages" class="summary-value">—</strong>
+                    </div>
+                    <div class="summary-tile">
+                      <span class="summary-label">Pastas</span>
+                      <strong id="summary-folders" class="summary-value">—</strong>
+                    </div>
+                    <div class="summary-tile">
+                      <span class="summary-label">Duração</span>
+                      <strong id="summary-duration" class="summary-value">00:00</strong>
+                    </div>
+                    <div class="summary-tile">
+                      <span class="summary-label">Resultado</span>
+                      <strong id="summary-result" class="summary-value">Em andamento</strong>
+                    </div>
+                  </div>
+
+                  <div class="summary-highlight">
+                    <span class="summary-label">Última atividade</span>
+                    <p id="summary-message">Aguardando início...</p>
+                  </div>
+
+                  <div class="summary-activity">
+                    <span class="summary-label">Atividades recentes</span>
+                    <ul id="activity-list" class="activity-list"></ul>
+                    <p id="activity-empty" class="activity-empty">Nenhuma atividade registrada ainda.</p>
+                  </div>
+                </div>
+
+                <button
+                  id="btn-toggle-log"
+                  class="button is-light is-small is-fullwidth processing-toggle"
+                  type="button"
+                  aria-expanded="false"
+                  aria-controls="log-panel"
+                >
+                  <span id="toggle-log-label">Ver processamento</span>
+                </button>
+
+                <div id="log-panel" class="log-panel is-hidden">
+                  <div class="log-toolbar">
+                    <label class="checkbox" for="autoscroll">
+                      <input id="autoscroll" type="checkbox" checked>
+                      Rolar automaticamente
+                    </label>
+                    <button id="btn-clear-log" class="button is-small is-light" type="button">
+                      Limpar
+                    </button>
+                  </div>
+
+                  <pre id="log-output" class="log-output" aria-live="polite"></pre>
+                </div>
+              </div>
+
+              <div class="box history-box">
+                <div class="status-box-header">
+                  <div>
+                    <h3>Últimas execuções</h3>
+                    <p class="status-date">Histórico local desta ferramenta</p>
+                  </div>
+                </div>
+                <div id="history-list" class="history-list">
+                  <p class="history-empty">Nenhuma execução registrada.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </main>
+
+        <footer class="app-footer">
+          <span>Motor de processamento de e-mails alimentado por rick-sanders-imap-tools</span>
+          <span class="footer-separator" aria-hidden="true">·</span>
+          <button id="btn-about" class="footer-link" type="button">Sobre</button>
+        </footer>
+      </div>
+    </div>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+    <div id="about-modal" class="modal about-modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="about-title">
+      <div class="modal-background" data-close-about></div>
+      <div class="modal-card">
+        <header class="modal-card-head">
+          <div class="about-brand">
+            <img src="../../assets/logo.png" alt="" class="about-logo">
+            <div>
+              <h2 id="about-title">Turbo IMAP</h2>
+              <p id="about-version" class="about-version">Versão 1.0.7</p>
+            </div>
+          </div>
+          <p id="about-runtime" class="about-runtime"></p>
+        </header>
+
+        <section class="modal-card-body">
+          <section class="about-section">
+            <h3>Objetivo do aplicativo</h3>
+            <p>
+              O Turbo IMAP é uma interface gráfica para simplificar a migração, o backup,
+              a exportação, a importação, a limpeza e a auditoria de contas de e-mail que
+              usam o protocolo IMAP.
+            </p>
+            <p>
+              O IMAP (Internet Message Access Protocol) mantém as mensagens no servidor e
+              sincroniza pastas, mensagens, anexos e estados de leitura entre vários
+              dispositivos. Em uma migração entre provedores — por exemplo, de Gmail para
+              Microsoft 365 — é preciso copiar a estrutura de pastas e preservar o conteúdo
+              das caixas, evitando perda de mensagens e retrabalho.
+            </p>
+            <p>
+              O aplicativo reúne os scripts Perl em formulários, valida os parâmetros, monta
+              os comandos, executa cada ferramenta em um subprocesso, acompanha o progresso,
+              grava logs e mantém as últimas configurações. Isso reduz erros manuais e torna
+              operações longas mais seguras e rastreáveis, sem exigir que o usuário memorize
+              dezenas de opções de linha de comando.
+            </p>
+          </section>
+
+          <section class="about-section">
+            <h3>Tecnologias utilizadas</h3>
+            <ul class="about-list">
+              <li><strong>Electron + Node.js</strong> — aplicativo desktop e execução dos processos.</li>
+              <li><strong>Bulma CSS</strong> — interface responsiva e componentes visuais.</li>
+              <li><strong>SQLite</strong> — configurações, credenciais protegidas e histórico local.</li>
+              <li><strong>Strawberry Perl portátil</strong> — runtime incluído para executar os scripts no Windows.</li>
+              <li><strong>child_process + IPC seguro</strong> — execução dos scripts e comunicação com a interface.</li>
+            </ul>
+          </section>
+
+          <section class="about-section">
+            <h3>Repositório do projeto</h3>
+            <p>
+              Código-fonte, versões e acompanhamento de issues:
+              <code>github.com/emileite/turbo-imap</code>
+            </p>
+            <button id="btn-open-repo" class="button is-small is-light about-repo-button" type="button">
+              Abrir repositório no navegador
+            </button>
+          </section>
+
+          <section class="about-section">
+            <h3>Origem dos scripts</h3>
+            <p>
+              As operações de IMAP são executadas pela suíte open source
+              <strong>rick-sanders-imap-tools</strong>, criada por <strong>Rick Sanders</strong>
+              e disponível em <code>github.com/rick-sanders/imap-tools</code>. Os scripts
+              Perl são mantidos separados da interface do aplicativo.
+            </p>
+          </section>
+
+          <section class="about-section about-thanks">
+            <h3>Agradecimento</h3>
+            <p>
+              Agradecimento especial a Rick Sanders e a todos que contribuíram para a suíte
+              rick-sanders-imap-tools, pelo trabalho que tornou este aplicativo possível.
+              Agradecimento também às comunidades Electron, Bulma, SQLite e Strawberry Perl.
+            </p>
+          </section>
+
+          <section class="about-section about-warning">
+            <h3>Aviso importante</h3>
+            <p>
+              As credenciais ficam armazenadas localmente. Ferramentas de limpeza e exclusão
+              podem remover mensagens permanentemente. Quando disponível, mantenha o modo de
+              teste ativado e faça um backup antes de operações destrutivas.
+            </p>
+          </section>
+        </section>
+
+        <footer class="modal-card-foot">
+          <button type="button" class="button is-primary" data-close-about>Fechar</button>
+        </footer>
+      </div>
+    </div>
+
+    <script src="app.js"></script>
+  </body>
+</html>

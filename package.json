@@ -1,0 +1,87 @@
+{
+  "name": "turbo-imap",
+  "version": "1.0.7",
+  "description": "Interface grafica Electron para a suite de ferramentas IMAP de Rick Sanders",
+  "main": "src/main/main.js",
+  "author": "Turbo IMAP",
+  "license": "MIT",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron .",
+    "postinstall": "node tools/copy-vendor.js",
+    "build": "electron-builder --win",
+    "build:dir": "electron-builder --dir",
+    "prebuild": "node tools/prepare-perl.js && node tools/prepare-sqlite-win.js",
+    "prebuild:dir": "node tools/prepare-perl.js && node tools/prepare-sqlite-win.js",
+    "prepare:perl": "node tools/prepare-perl.js",
+    "prepare:sqlite:win": "node tools/prepare-sqlite-win.js",
+    "restore:sqlite:linux": "npm rebuild sqlite3"
+  },
+  "dependencies": {
+    "bulma": "^1.0.4",
+    "sqlite3": "^6.0.1"
+  },
+  "devDependencies": {
+    "electron": "^44.9.0",
+    "electron-builder": "^26.15.3",
+    "unzipper": "^0.12.5"
+  },
+  "build": {
+    "appId": "com.turboimap.app",
+    "productName": "Turbo IMAP",
+    "copyright": "Turbo IMAP",
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    },
+    "files": [
+      "src/**/*",
+      "assets/**/*",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "scripts",
+        "to": "scripts",
+        "filter": [
+          "**/*"
+        ]
+      },
+      {
+        "from": "vendor/strawberry",
+        "to": "strawberry",
+        "filter": [
+          "**/*"
+        ]
+      }
+    ],
+    "asar": true,
+    "win": {
+      "target": "nsis",
+      "icon": "assets/logo.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    },
+    "linux": {
+      "target": [
+        "AppImage"
+      ],
+      "icon": "assets/logo.png",
+      "category": "Network"
+    },
+    "npmRebuild": false
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/emileite/turbo-imap.git"
+  },
+  "homepage": "https://github.com/emileite/turbo-imap",
+  "bugs": {
+    "url": "https://github.com/emileite/turbo-imap/issues"
+  }
+}

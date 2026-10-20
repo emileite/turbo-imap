@@ -1,0 +1,77 @@
+# Pacote original baixado da suite (scripts ja versionados em scripts/)
+/imaptools/
+
+# Dependencias
+node_modules/
+
+# Builds e artefatos gerados
+dist/
+out/
+release/
+*.blockmap
+
+# Runtime portatil baixado para o build Windows
+vendor/strawberry/
+vendor/strawberry-perl.zip
+
+# Banco local e arquivos auxiliares do SQLite
+turbo-imap.db
+turbo-imap.db-shm
+turbo-imap.db-wal
+
+# Logs de execucao e relatorios gerados pelos scripts
+*.log
+*.log.*
+logs/*
+!logs/.gitkeep
+progress/*
+!progress/.gitkeep
+list_account_sizes.report
+
+# Arquivos temporarios de credenciais criados durante a execucao
+progress/.users_*
+
+# Configuracoes locais e segredos
+.env
+.env.*
+*.local
+
+# Caches de ferramentas
+.nyc_output/
+coverage/
+.cache/
+.parcel-cache/
+.eslintcache
+.stylelintcache
+*.tsbuildinfo
+
+# Python (tools/generate-logo.py)
+__pycache__/
+*.py[cod]
+
+# Logs de gerenciadores de pacotes
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Editores
+.vscode/
+.idea/
+.fleet/
+*.swp
+*.swo
+*~
+*.orig
+*.rej
+
+# Sistema operacional
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
