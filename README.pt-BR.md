@@ -335,8 +335,7 @@ No aplicativo empacotado, esses dados ficam no `userData` do Electron
 
 ```text
 assets/               logo, ícones Windows/macOS e splash
-docs/screenshots/     capturas de tela em inglês e português
-page/                 landing page estática (GitHub Pages)
+docs/                 landing page e capturas de tela em inglês/português (GitHub Pages)
 logs/                 logs gerados em tempo de execução
 progress/             snapshots de progresso
 scripts/              suíte rick-sanders-imap-tools (.pl)

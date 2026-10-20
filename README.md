@@ -359,8 +359,7 @@ In the packaged application, these files live in Electron's `userData` directory
 
 ```text
 assets/               logo, Windows/macOS icons and splash
-docs/screenshots/     English and Portuguese screenshots used by the READMEs
-page/                 static landing page (GitHub Pages)
+docs/                 landing page and EN/PT screenshots (GitHub Pages)
 logs/                 runtime logs
 progress/             progress snapshots
 scripts/              rick-sanders-imap-tools suite (.pl)
