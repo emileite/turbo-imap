@@ -8,11 +8,15 @@
 
 Turbo IMAP e um aplicativo desktop Electron para Windows (com suporte de desenvolvimento
 em Linux/macOS) que oferece uma interface grafica amigavel para a suite de scripts Perl
-`rick-sanders-imap-tools`.
+`rick-sanders-imap-tools`. A interface e localizada em ingles (padrao) e portugues do
+Brasil, escolhido automaticamente conforme o idioma do sistema operacional.
 
 ## Escopo principal
 
 - Interface grafica construida com Bulma CSS, com cores solidas e sem degradês.
+- Internacionalizacao (i18n) com ingles como padrao e portugues quando o sistema estiver
+  configurado em portugues; todos os labels, mensagens, ferramentas e dialogos sao
+  traduzidos.
 - Menu lateral agrupado em Migração e Sincronização, Backup/Exportação/Importação,
   Limpeza/Manutenção e Auditoria/Diagnóstico/Informação.
 - Banco de dados SQLite local para armazenar credenciais e a última configuração de cada

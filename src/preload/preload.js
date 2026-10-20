@@ -5,6 +5,7 @@ const { contextBridge, ipcRenderer } = require('electron');
 contextBridge.exposeInMainWorld('turbo', {
   getTools: () => ipcRenderer.invoke('tools:list'),
   getSystemInfo: () => ipcRenderer.invoke('system:info'),
+  getI18n: () => ipcRenderer.invoke('i18n:get'),
 
   getConfig: (scriptName) => ipcRenderer.invoke('config:get', scriptName),
   saveConfig: (scriptName, values) => ipcRenderer.invoke('config:save', scriptName, values),

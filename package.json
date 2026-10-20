@@ -1,6 +1,6 @@
 {
   "name": "turbo-imap",
-  "version": "1.0.7",
+  "version": "1.1.0",
   "description": "Interface grafica Electron para a suite de ferramentas IMAP de Rick Sanders",
   "main": "src/main/main.js",
   "author": "Turbo IMAP",
@@ -12,11 +12,20 @@
     "postinstall": "node tools/copy-vendor.js",
     "build": "electron-builder --win",
     "build:dir": "electron-builder --dir",
-    "prebuild": "node tools/prepare-perl.js && node tools/prepare-sqlite-win.js",
-    "prebuild:dir": "node tools/prepare-perl.js && node tools/prepare-sqlite-win.js",
+    "prebuild": "node tools/prepare-perl.js && node tools/prepare-sqlite.js win32 x64",
+    "prebuild:dir": "node tools/prepare-perl.js && node tools/prepare-sqlite.js win32 x64",
     "prepare:perl": "node tools/prepare-perl.js",
-    "prepare:sqlite:win": "node tools/prepare-sqlite-win.js",
-    "restore:sqlite:linux": "npm rebuild sqlite3"
+    "restore:sqlite:linux": "npm rebuild sqlite3",
+    "build:win": "electron-builder --win",
+    "prebuild:win": "node tools/prepare-perl.js && node tools/prepare-sqlite.js win32 x64",
+    "build:linux": "electron-builder --linux",
+    "prebuild:linux": "node tools/prepare-sqlite.js linux x64",
+    "build:mac": "npm run build:mac:x64 && npm run build:mac:arm64",
+    "build:mac:x64": "electron-builder --mac zip --x64",
+    "prebuild:mac:x64": "node tools/prepare-sqlite.js darwin x64",
+    "build:mac:arm64": "electron-builder --mac zip --arm64",
+    "prebuild:mac:arm64": "node tools/prepare-sqlite.js darwin arm64",
+    "prepare:sqlite": "node tools/prepare-sqlite.js"
   },
   "dependencies": {
     "bulma": "^1.0.4",
@@ -47,19 +56,21 @@
         "filter": [
           "**/*"
         ]
-      },
-      {
-        "from": "vendor/strawberry",
-        "to": "strawberry",
-        "filter": [
-          "**/*"
-        ]
       }
     ],
     "asar": true,
     "win": {
       "target": "nsis",
-      "icon": "assets/logo.ico"
+      "icon": "assets/logo.ico",
+      "extraResources": [
+        {
+          "from": "vendor/strawberry",
+          "to": "strawberry",
+          "filter": [
+            "**/*"
+          ]
+        }
+      ]
     },
     "nsis": {
       "oneClick": false,
@@ -74,7 +85,16 @@
       "icon": "assets/logo.png",
       "category": "Network"
     },
-    "npmRebuild": false
+    "npmRebuild": false,
+    "mac": {
+      "target": [
+        "zip"
+      ],
+      "icon": "assets/logo.icns",
+      "category": "public.app-category.utilities",
+      "identity": null,
+      "hardenedRuntime": false
+    }
   },
   "repository": {
     "type": "git",

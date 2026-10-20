@@ -31,6 +31,10 @@ body {
   overflow: hidden;
 }
 
+body.i18n-pending .app-shell {
+  visibility: hidden;
+}
+
 .app-shell {
   display: flex;
   height: 100vh;

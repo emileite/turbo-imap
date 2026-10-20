@@ -12,6 +12,8 @@ const state = {
   history: [],
   logLineCount: 0,
   showPasswords: false,
+  i18n: { strings: {}, patterns: {}, aboutHtml: '', thunderbirdHtml: '' },
+  language: 'en',
   summary: createEmptySummary(),
   runStartedAt: null,
   runFinishedAt: null,
@@ -78,7 +80,6 @@ function cacheElements() {
     'about-modal',
     'about-version',
     'about-runtime',
-    'btn-open-repo',
     'run-state',
     'run-started',
     'progress-bar',
@@ -108,14 +109,121 @@ function cacheElements() {
   }
 }
 
+function t(key, params = {}) {
+  const templates = (state.i18n && state.i18n.patterns) || {};
+  const template = Object.prototype.hasOwnProperty.call(templates, key) ? templates[key] : key;
+  return String(template).replace(/\{(\w+)\}/g, (match, name) => {
+    return Object.prototype.hasOwnProperty.call(params, name) ? String(params[name]) : match;
+  });
+}
+
+function trText(text) {
+  if (typeof text !== 'string') return text;
+  const strings = (state.i18n && state.i18n.strings) || {};
+  return Object.prototype.hasOwnProperty.call(strings, text) ? strings[text] : text;
+}
+
+function displayStatus(status) {
+  const keys = {
+    Sucesso: 'status.success',
+    Falha: 'status.failure',
+    Interrompido: 'status.interrupted',
+    'Em execução': 'status.running',
+    'Em execucao': 'status.running',
+    'Em andamento': 'status.inProgress'
+  };
+  return keys[status] ? t(keys[status]) : status;
+}
+
 function formatDate(value) {
-  if (!value) return 'Sem registros';
+  if (!value) return t('status.noRecords');
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return value;
-  return new Intl.DateTimeFormat('pt-BR', {
+  return new Intl.DateTimeFormat(state.language === 'pt-BR' ? 'pt-BR' : 'en-US', {
     dateStyle: 'short',
     timeStyle: 'medium'
   }).format(date);
+}
+
+function translateDom(root = document.body) {
+  const skipTags = new Set(['SCRIPT', 'STYLE', 'CODE', 'PRE', 'TEXTAREA']);
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+    acceptNode(node) {
+      if (!node.nodeValue || !node.nodeValue.trim()) return NodeFilter.FILTER_REJECT;
+      let parent = node.parentElement;
+      while (parent && parent !== root) {
+        if (
+          skipTags.has(parent.tagName) ||
+          parent.id === 'log-output' ||
+          parent.classList.contains('log-output')
+        ) {
+          return NodeFilter.FILTER_REJECT;
+        }
+        parent = parent.parentElement;
+      }
+      return NodeFilter.FILTER_ACCEPT;
+    }
+  });
+
+  const nodes = [];
+  while (walker.nextNode()) nodes.push(walker.currentNode);
+  for (const node of nodes) {
+    const raw = node.nodeValue;
+    const trimmed = raw.trim();
+    const translated = trText(trimmed);
+    if (translated !== trimmed) {
+      node.nodeValue = raw.replace(trimmed, translated);
+    }
+  }
+
+  for (const element of root.querySelectorAll('[placeholder]')) {
+    const value = element.getAttribute('placeholder');
+    const translated = trText(value);
+    if (translated !== value) element.setAttribute('placeholder', translated);
+  }
+
+  for (const element of root.querySelectorAll('[title]')) {
+    const value = element.getAttribute('title');
+    const translated = trText(value);
+    if (translated !== value) element.setAttribute('title', translated);
+  }
+
+  for (const element of root.querySelectorAll('[aria-label]')) {
+    const value = element.getAttribute('aria-label');
+    const translated = trText(value);
+    if (translated !== value) element.setAttribute('aria-label', translated);
+  }
+}
+
+function bindRepositoryButton() {
+  const button = document.getElementById('btn-open-repo');
+  if (!button) return;
+  button.addEventListener('click', async () => {
+    const result = await api.openRepository();
+    if (!result || !result.ok) {
+      showToast((result && result.error) || t('toast.openRepoError'), 'error');
+    }
+  });
+}
+
+function applyStaticTranslations() {
+  document.documentElement.lang = state.language;
+  document.documentElement.style.setProperty(
+    '--log-placeholder',
+    JSON.stringify(trText('Os logs da execução aparecem aqui.'))
+  );
+
+  const aboutBody = els.aboutModal.querySelector('.modal-card-body');
+  if (aboutBody && state.i18n.aboutHtml) {
+    aboutBody.innerHTML = state.i18n.aboutHtml;
+    bindRepositoryButton();
+  }
+
+  if (els.thunderbirdInstructions && state.i18n.thunderbirdHtml) {
+    els.thunderbirdInstructions.innerHTML = state.i18n.thunderbirdHtml;
+  }
+
+  translateDom(document.body);
 }
 
 function setTag(element, text, kind) {
@@ -249,59 +357,63 @@ function ingestLogLine(line, shouldRender = true) {
     summary.total = Number(match[2]);
     const folder = match[3].trim();
     summary.folders.add(folder);
-    summary.message = `Copiando ${match[1]} de ${match[2]} mensagens (${folder})`;
-    addActivity(`Copiando ${match[1]} de ${match[2]} mensagens em ${folder}`, 'copy-progress');
+    summary.message = t('summary.copying', {
+      current: match[1],
+      total: match[2],
+      folder
+    });
+    addActivity(summary.message, 'copy-progress');
   } else if ((match = text.match(/Copied\s+(\d+)\s+total\s+messages/i))) {
     summary.copied = Number(match[1]);
-    addActivity(`${match[1]} mensagens copiadas no total`, 'copied-total');
+    addActivity(t('summary.copiedTotal', { count: match[1] }), 'copied-total');
   } else if ((match = text.match(/source\s+(.+?)\s+has\s+(\d+)\s+messages/i))) {
     const folder = match[1].trim();
     summary.total = Number(match[2]);
     summary.folders.add(folder);
-    summary.message = `Pasta ${folder} com ${match[2]} mensagens`;
-    addActivity(`Pasta ${folder} com ${match[2]} mensagens`, `source-count:${folder}`);
+    summary.message = t('summary.folderCount', { folder, count: match[2] });
+    addActivity(summary.message, `source-count:${folder}`);
   } else if ((match = text.match(/There are\s+(\d+)\s+messages\s+in\s+(.+)/i))) {
     summary.total = Number(match[1]);
     const folder = match[2].trim();
     summary.folders.add(folder);
-    summary.message = `Pasta ${folder} com ${match[1]} mensagens`;
-    addActivity(`Pasta ${folder} com ${match[1]} mensagens`, `folder-count:${folder}`);
+    summary.message = t('summary.folderCount', { folder, count: match[1] });
+    addActivity(summary.message, `folder-count:${folder}`);
   } else if ((match = text.match(/Checking mailbox\s+(.+)/i))) {
     const folder = match[1].trim();
     summary.folders.add(folder);
-    summary.message = `Verificando pasta ${folder}`;
-    addActivity(`Verificando pasta ${folder}`, `checking:${folder}`);
+    summary.message = t('summary.checking', { folder });
+    addActivity(summary.message, `checking:${folder}`);
   } else if ((match = text.match(/Purging mailbox\s+(.+)/i))) {
     const folder = match[1].trim();
     summary.folders.add(folder);
-    summary.message = `Limpando pasta ${folder}`;
-    addActivity(`Limpando pasta ${folder}`, `purging:${folder}`);
+    summary.message = t('summary.purging', { folder });
+    addActivity(summary.message, `purging:${folder}`);
   } else if ((match = text.match(/Inserted\s+(\d+)\s+messages\s+into\s+(.+)/i))) {
     summary.inserted = Number(match[1]);
     const folder = match[2].trim();
     summary.folders.add(folder);
-    addActivity(`${match[1]} mensagens enviadas para ${folder}`, `inserted:${folder}`);
+    addActivity(t('summary.insertedFolder', { count: match[1], folder }), `inserted:${folder}`);
   } else if ((match = text.match(/Added\s+(\d+)\s+msgs/i))) {
     summary.added = Number(match[1]);
-    addActivity(`${match[1]} mensagens adicionadas`, 'added');
+    addActivity(t('summary.addedCount', { count: match[1] }), 'added');
   } else if ((match = text.match(/Total messages purged\s+(\d+)/i)) || (match = text.match(/expunged\s+(\d+)\s+messages purged/i))) {
     summary.purged = Number(match[1]);
-    addActivity(`${match[1]} mensagens purgadas`, 'purged');
+    addActivity(t('summary.purgedCount', { count: match[1] }), 'purged');
   } else if ((match = text.match(/Copying\s+(\d+)\s+messages\s+in\s+(.+)/i))) {
     summary.total = Number(match[1]);
     const folder = match[2].trim();
     summary.folders.add(folder);
-    summary.message = `Copiando ${match[1]} mensagens em ${folder}`;
-    addActivity(`${match[1]} mensagens a copiar em ${folder}`, `copy-plan:${folder}`);
+    summary.message = t('summary.copyPlan', { count: match[1], folder });
+    addActivity(summary.message, `copy-plan:${folder}`);
   } else if ((match = text.match(/Connecting to\s+(.+)/i))) {
-    summary.message = `Conectando a ${cleanStatusText(match[1])}`;
+    summary.message = t('summary.connecting', { host: cleanStatusText(match[1]) });
     addActivity(summary.message, 'connecting');
   } else if ((match = text.match(/Logged in as\s+(.+)/i))) {
-    summary.message = `Autenticado como ${cleanStatusText(match[1])}`;
+    summary.message = t('summary.authenticated', { user: cleanStatusText(match[1]) });
     addActivity(summary.message, 'login');
   } else if ((match = text.match(/Number of mailboxes to process:\s*(\d+)/i)) ||
              (match = text.match(/There are\s+(\d+)\s+mailboxes\s+to\s+(?:sync|process)/i))) {
-    addActivity(`${match[1]} pasta(s) na fila de processamento`, 'mailbox-total');
+    addActivity(t('summary.mailboxQueue', { count: match[1] }), 'mailbox-total');
   } else if (/Error connecting|Login failed|Authentication failed|\bFatal\b/i.test(text)) {
     addActivity(text.length > 140 ? `${text.slice(0, 137)}...` : text, 'error');
   }
@@ -347,18 +459,25 @@ function renderSummary() {
   }
 
   const details = [];
-  if (summary.total > 0) details.push(`Progresso: ${summary.current} de ${summary.total}`);
-  if (summary.copied !== null) details.push(`Copiadas: ${summary.copied}`);
-  if (summary.added !== null) details.push(`Adicionadas: ${summary.added}`);
-  if (summary.inserted !== null) details.push(`Inseridas: ${summary.inserted}`);
-  if (summary.purged !== null) details.push(`Purgadas: ${summary.purged}`);
+  if (summary.total > 0) {
+    details.push(
+      `${t('summary.messages')}: ${t('summary.progress', {
+        current: summary.current,
+        total: summary.total
+      })}`
+    );
+  }
+  if (summary.copied !== null) details.push(`${t('summary.copied')}: ${summary.copied}`);
+  if (summary.added !== null) details.push(`${t('summary.added')}: ${summary.added}`);
+  if (summary.inserted !== null) details.push(`${t('summary.inserted')}: ${summary.inserted}`);
+  if (summary.purged !== null) details.push(`${t('summary.purged')}: ${summary.purged}`);
 
-  let messagesLabel = 'Mensagens';
+  let messagesLabel = t('summary.messages');
   if (finished) {
-    if (summary.copied !== null) messagesLabel = 'Copiadas';
-    else if (summary.inserted !== null) messagesLabel = 'Inseridas';
-    else if (summary.added !== null) messagesLabel = 'Adicionadas';
-    else if (summary.purged !== null) messagesLabel = 'Purgadas';
+    if (summary.copied !== null) messagesLabel = t('summary.copied');
+    else if (summary.inserted !== null) messagesLabel = t('summary.inserted');
+    else if (summary.added !== null) messagesLabel = t('summary.added');
+    else if (summary.purged !== null) messagesLabel = t('summary.purged');
   }
 
   els.summaryMessagesLabel.textContent = messagesLabel;
@@ -366,9 +485,9 @@ function renderSummary() {
   els.summaryMessages.title = details.join(' · ');
   els.summaryFolders.textContent = summary.folders.size ? String(summary.folders.size) : '—';
   els.summaryFolders.title = [...summary.folders].join(', ');
-  els.summaryResult.textContent = summary.result || '—';
+  els.summaryResult.textContent = summary.result ? displayStatus(summary.result) : '—';
   els.summaryResult.className = `summary-value${kind ? ` is-${kind}` : ''}`;
-  els.summaryMessage.textContent = summary.message || 'Aguardando início...';
+  els.summaryMessage.textContent = summary.message || t('summary.waitingStart');
 
   els.activityList.textContent = '';
   if (summary.activities.length === 0) {
@@ -392,7 +511,7 @@ function resetSummaryView() {
   state.runStartedAt = null;
   state.runFinishedAt = null;
   state.summary = createEmptySummary();
-  els.activityEmpty.textContent = 'Nenhuma atividade registrada ainda.';
+  els.activityEmpty.textContent = t('summary.noActivity');
   setSummaryVisible(false);
   renderSummary();
 }
@@ -400,10 +519,10 @@ function resetSummaryView() {
 function startSummary(startedAt) {
   state.summary = createEmptySummary();
   state.summary.result = 'Em andamento';
-  state.summary.message = 'Iniciando execução...';
+  state.summary.message = t('summary.init');
   state.runStartedAt = null;
   state.runFinishedAt = null;
-  els.activityEmpty.textContent = 'Nenhuma atividade registrada ainda.';
+  els.activityEmpty.textContent = t('summary.noActivity');
   setSummaryVisible(true);
   startDurationTimer(startedAt);
   renderSummary();
@@ -411,10 +530,18 @@ function startSummary(startedAt) {
 
 function updateLogToggleLabel() {
   const count = state.logLineCount;
-  const action = state.logExpanded ? 'Ocultar processamento' : 'Ver processamento';
-  els.toggleLogLabel.textContent = count
-    ? `${action} (${count} ${count === 1 ? 'linha' : 'linhas'})`
-    : action;
+  const action = state.logExpanded ? t('summary.logLinesHide', { count }) : t('summary.logLines', { count });
+  if (count === 0) {
+    els.toggleLogLabel.textContent = state.logExpanded
+      ? t('summary.logLinesHide', { count: 0 })
+      : t('summary.logLines', { count: 0 });
+  } else if (count === 1) {
+    els.toggleLogLabel.textContent = state.logExpanded
+      ? t('summary.logLinesHideOne')
+      : t('summary.logLinesOne');
+  } else {
+    els.toggleLogLabel.textContent = action;
+  }
 }
 
 function setLogExpanded(expanded) {
@@ -443,7 +570,9 @@ function openAbout() {
     .filter(Boolean)
     .join(' · ');
 
-  els.aboutVersion.textContent = `Versão ${system.appVersion || '1.0.7'}`;
+  els.aboutVersion.textContent = t('about.version', {
+    version: system.appVersion || '1.1.0'
+  });
   els.aboutRuntime.textContent = runtime;
   els.aboutModal.classList.add('is-active');
   els.aboutModal.setAttribute('aria-hidden', 'false');
@@ -527,7 +656,7 @@ function updateNavActive() {
 
 function handleToolClick(toolId) {
   if (state.running && state.activeRun && state.activeRun.scriptName !== toolId) {
-    showToast('Interrompa a execução atual antes de trocar de ferramenta.', 'error');
+    showToast(t('toast.toolRunning'), 'error');
     return;
   }
   if (state.activeTool && state.activeTool.id === toolId) return;
@@ -541,26 +670,25 @@ function renderSystemInfo() {
   const perl = system.perl || {};
   if (perl.found) {
     els.perlIndicator.className = 'tag is-success is-light is-fullwidth';
-    els.perlIndicator.textContent = `Perl ${perl.version || 'disponivel'}`;
+    els.perlIndicator.textContent = `Perl ${perl.version || t('perl.available')}`;
     els.perlIndicator.title = perl.command;
     els.connectionWarning.classList.add('is-hidden');
   } else {
     els.perlIndicator.className = 'tag is-danger is-light is-fullwidth';
-    els.perlIndicator.textContent = 'Perl não encontrado';
+    els.perlIndicator.textContent = t('perl.notFound');
     els.perlIndicator.title = perl.error || '';
-    els.connectionWarning.textContent = 'Perl não encontrado';
+    els.connectionWarning.textContent = t('perl.notFound');
     els.connectionWarning.classList.remove('is-hidden');
   }
 
   if (system.availableScripts === 0) {
-    els.connectionWarning.textContent = 'Scripts Perl não encontrados';
+    els.connectionWarning.textContent = t('perl.scriptsNotFound');
     els.connectionWarning.classList.remove('is-hidden');
   }
 
-  const protection = system.safeStorageAvailable
-    ? 'senhas protegidas pelo sistema'
-    : 'senhas com ofuscação local';
-  els.sidebarHint.textContent = `SQLite local · ${protection}`;
+  els.sidebarHint.textContent = system.safeStorageAvailable
+    ? t('logs.storageProtected')
+    : t('logs.storageObfuscated');
   els.sidebarHint.title = system.dataRoot || '';
 }
 
@@ -579,18 +707,18 @@ function renderToolMeta(tool) {
   els.resumeLabel.textContent = tool.resume.label;
   els.resumeNote.textContent = tool.resume.note || '';
   els.optionsHint.textContent = tool.fields.length
-    ? 'Ajuste os parâmetros específicos desta ferramenta.'
-    : 'Esta ferramenta não exige opções adicionais.';
+    ? t('tool.optionsHint')
+    : t('tool.noOptions');
 }
 
 function renderLastStatus(status, date) {
   const normalized = status;
   setTag(
     els.lastStatus,
-    normalized || 'Nunca executado',
+    normalized ? displayStatus(normalized) : t('status.neverRun'),
     normalized ? statusKind(normalized) : 'light'
   );
-  els.lastRunDate.textContent = date ? formatDate(date) : 'Sem registros';
+  els.lastRunDate.textContent = date ? formatDate(date) : t('status.noRecords');
 }
 
 function optionInputId(field) {
@@ -603,15 +731,15 @@ function setInputValue(id, value) {
 }
 
 function applyCredentialLabels(tool) {
-  els.sourceTitle.textContent = tool.sourceLabel || 'Origem';
-  els.sourceHostLabel.textContent = tool.sourceHostLabel || 'Servidor IMAP';
-  els.sourceUserLabel.textContent = tool.sourceUserLabel || 'Usuário';
-  els.sourcePassLabel.textContent = tool.sourcePassLabel || 'Senha ou token OAuth2';
+  els.sourceTitle.textContent = tool.sourceLabel || trText('Origem');
+  els.sourceHostLabel.textContent = tool.sourceHostLabel || trText('Servidor IMAP');
+  els.sourceUserLabel.textContent = tool.sourceUserLabel || trText('Usuário');
+  els.sourcePassLabel.textContent = tool.sourcePassLabel || trText('Senha ou token OAuth2');
 
-  els.destTitle.textContent = tool.destinationLabel || 'Destino';
-  els.destHostLabel.textContent = tool.destinationHostLabel || 'Servidor IMAP';
-  els.destUserLabel.textContent = tool.destinationUserLabel || 'Usuário';
-  els.destPassLabel.textContent = tool.destinationPassLabel || 'Senha ou token OAuth2';
+  els.destTitle.textContent = tool.destinationLabel || trText('Destino');
+  els.destHostLabel.textContent = tool.destinationHostLabel || trText('Servidor IMAP');
+  els.destUserLabel.textContent = tool.destinationUserLabel || trText('Usuário');
+  els.destPassLabel.textContent = tool.destinationPassLabel || trText('Senha ou token OAuth2');
 }
 
 function fillForm(tool, config) {
@@ -762,7 +890,7 @@ function renderOptions(tool, config) {
   if (!tool.fields.length) {
     const empty = document.createElement('p');
     empty.className = 'options-empty';
-    empty.textContent = 'Nenhum parametro adicional. Basta informar as credenciais.';
+    empty.textContent = t('tool.noOptionsEmpty');
     container.append(empty);
     return;
   }
@@ -826,17 +954,17 @@ function validateValues(tool, values) {
 
   if (tool.source) {
     if (!tool.sourceHostHidden) {
-      checks.push(['source-host', values.source.host, 'Informe o servidor de origem.']);
+      checks.push(['source-host', values.source.host, t('validation.sourceHost')]);
     }
-    checks.push(['source-user', values.source.user, 'Informe o usuário de origem.']);
-    checks.push(['source-pass', values.source.pass, 'Informe a senha de origem.']);
+    checks.push(['source-user', values.source.user, t('validation.sourceUser')]);
+    checks.push(['source-pass', values.source.pass, t('validation.sourcePass')]);
   }
 
   if (tool.destination) {
     checks.push(
-      ['dest-host', values.destination.host, 'Informe o servidor de destino.'],
-      ['dest-user', values.destination.user, 'Informe o usuário de destino.'],
-      ['dest-pass', values.destination.pass, 'Informe a senha de destino.']
+      ['dest-host', values.destination.host, t('validation.destHost')],
+      ['dest-user', values.destination.user, t('validation.destUser')],
+      ['dest-pass', values.destination.pass, t('validation.destPass')]
     );
   }
 
@@ -844,7 +972,11 @@ function validateValues(tool, values) {
     if (!field.required) continue;
     const value = values.options[field.key];
     if (value === undefined || value === null || String(value).trim() === '') {
-      checks.push([optionInputId(field), '', `Preencha o campo "${field.label}".`]);
+      checks.push([
+        optionInputId(field),
+        '',
+        t('validation.requiredField', { label: field.label })
+      ]);
     }
   }
 
@@ -872,7 +1004,7 @@ function validateValues(tool, values) {
     const number = Number(value);
     if (!Number.isFinite(number) || number <= 0) {
       markInvalid(optionInputId(field));
-      return `O campo "${field.label}" deve ser um número positivo.`;
+      return t('validation.numberPositive', { label: field.label });
     }
   }
 
@@ -887,13 +1019,13 @@ function dangerousActions(tool, values) {
     }
   }
   if (tool.id === 'purgeMbx') {
-    actions.push(`Limpar a pasta "${values.options.mailbox}" (todas as mensagens serão removidas).`);
+    actions.push(t('danger.purgeMbx', { mailbox: values.options.mailbox }));
   }
   if (tool.id === 'delete_imap_mailboxes' && values.options.testMode !== true) {
-    actions.push(`Excluir as pastas que correspondem a "${values.options.mailboxRegex}".`);
+    actions.push(t('danger.deleteMailboxes', { regex: values.options.mailboxRegex }));
   }
   if (tool.id === 'imapfilter' && values.options.testMode !== true) {
-    actions.push('Aplicar as regras de filtro de verdade no servidor.');
+    actions.push(t('danger.imapfilter'));
   }
   return actions;
 }
@@ -963,7 +1095,7 @@ function applyProgress(progress, forcedStatus) {
     els.progressBar.max = 100;
     els.progressBar.value = 0;
     els.progressBar.className = 'progress is-primary';
-    els.progressLabel.textContent = 'Aguardando início';
+    els.progressLabel.textContent = t('summary.waiting');
     els.progressPercent.textContent = '0%';
     return;
   }
@@ -994,7 +1126,7 @@ function applyProgress(progress, forcedStatus) {
     els.progressPercent.textContent = '—';
   }
 
-  const detail = cleanStatusText(progress.message || (finished ? status : 'Processando...'));
+  const detail = cleanStatusText(progress.message || (finished ? status : t('summary.processing')));
   els.progressLabel.textContent = detail;
   els.progressLabel.title = detail;
 }
@@ -1020,17 +1152,17 @@ function applySavedProgress(progress) {
   state.summary.percent = typeof progress.percent === 'number' ? progress.percent : null;
   state.summary.message =
     status === 'Falha'
-      ? 'A última execução falhou. Consulte o processamento para detalhes.'
+      ? t('summary.failedHint')
       : status === 'Interrompido'
-        ? 'A última execução foi interrompida.'
+        ? t('summary.interruptedHint')
         : status === 'Sucesso'
-          ? 'Concluído com sucesso'
+          ? t('summary.done')
           : cleanStatusText(progress.message) || '';
   state.summary.result = status;
   state.runStartedAt = progress.startedAt || null;
   state.runFinishedAt = progress.updatedAt || progress.startedAt || null;
 
-  els.activityEmpty.textContent = 'Atividades recentes não disponíveis para execuções anteriores.';
+  els.activityEmpty.textContent = t('summary.noPreviousActivity');
   setSummaryVisible(true);
   renderSummary();
   applyProgress(progress, status);
@@ -1041,10 +1173,10 @@ function resetRunUi(clearProgress = true) {
     applyProgress(null);
     resetSummaryView();
   }
-  els.runState.textContent = 'Aguardando';
+  els.runState.textContent = t('status.waiting');
   els.runState.className = 'tag is-light';
-  els.runStarted.textContent = 'Nenhum processo ativo';
-  setTag(els.runPill, 'Ocioso', 'light');
+  els.runStarted.textContent = t('status.noActiveProcess');
+  setTag(els.runPill, t('status.idle'), 'light');
   els.btnRun.classList.remove('is-hidden');
   els.btnRun.disabled = false;
   els.btnStop.classList.add('is-hidden');
@@ -1053,9 +1185,9 @@ function resetRunUi(clearProgress = true) {
 
 function markRunning(snapshot) {
   state.running = true;
-  els.runState.textContent = 'Em execução';
+  els.runState.textContent = displayStatus('Em execução');
   els.runState.className = 'tag is-info';
-  els.runStarted.textContent = `Iniciado em ${formatDate(snapshot.startedAt)}`;
+  els.runStarted.textContent = t('status.startedAt', { date: formatDate(snapshot.startedAt) });
   setTag(els.runPill, 'Executando...', 'info');
   els.btnRun.classList.add('is-hidden');
   els.btnStop.classList.remove('is-hidden');
@@ -1073,7 +1205,7 @@ function restoreActiveRun(snapshot) {
   markRunning(snapshot);
   clearLog();
   setLogExpanded(false);
-  appendLog('--- Reconectado a uma execução em andamento ---');
+  appendLog(t('summary.reconnected'));
 
   if (Array.isArray(snapshot.recentLogs)) {
     for (const line of snapshot.recentLogs) {
@@ -1086,7 +1218,7 @@ function restoreActiveRun(snapshot) {
   state.summary.current = Number(progress.current) || 0;
   state.summary.total = Number(progress.total) || 0;
   state.summary.percent = typeof progress.percent === 'number' ? progress.percent : null;
-  state.summary.message = cleanStatusText(progress.message) || 'Processamento em andamento';
+  state.summary.message = cleanStatusText(progress.message) || t('summary.processing');
   state.summary.result = 'Em andamento';
   setSummaryVisible(true);
   renderSummary();
@@ -1113,7 +1245,7 @@ function renderHistory(rows) {
   if (!rows || rows.length === 0) {
     const empty = document.createElement('p');
     empty.className = 'history-empty';
-    empty.textContent = 'Nenhuma execução registrada.';
+    empty.textContent = t('history.none');
     els.historyList.append(empty);
     return;
   }
@@ -1132,8 +1264,8 @@ function renderHistory(rows) {
     title.textContent = formatDate(row.started_at);
 
     const detail = document.createElement('small');
-    const code = Number.isInteger(row.exit_code) ? ` - código ${row.exit_code}` : '';
-    detail.textContent = `${row.status}${code}`;
+    const code = Number.isInteger(row.exit_code) ? ` - ${t('history.code', { code: row.exit_code })}` : '';
+    detail.textContent = `${displayStatus(row.status)}${code}`;
 
     meta.append(title, detail);
     item.append(meta);
@@ -1145,13 +1277,13 @@ function renderHistory(rows) {
       const viewButton = document.createElement('button');
       viewButton.type = 'button';
       viewButton.className = 'button is-small is-light';
-      viewButton.textContent = 'Ver';
+      viewButton.textContent = trText('Ver');
       viewButton.addEventListener('click', () => viewLog(row.log_file));
 
       const openButton = document.createElement('button');
       openButton.type = 'button';
       openButton.className = 'button is-small is-ghost';
-      openButton.textContent = 'Abrir';
+      openButton.textContent = trText('Abrir');
       openButton.addEventListener('click', () => openLog(row.log_file));
 
       actions.append(viewButton, openButton);
@@ -1188,7 +1320,7 @@ async function viewLog(logFile) {
   try {
     const result = await api.readLog(logFile);
     if (!result || !result.content) {
-      showToast(result && result.error ? result.error : 'Log vazio ou não encontrado.', 'error');
+      showToast(result && result.error ? result.error : t('toast.emptyLog'), 'error');
       return;
     }
 
@@ -1206,7 +1338,7 @@ async function viewLog(logFile) {
 async function openLog(logFile) {
   const result = await api.openLog(logFile);
   if (!result || !result.ok) {
-    showToast((result && result.error) || 'Não foi possível abrir o log.', 'error');
+    showToast((result && result.error) || t('toast.openLogError'), 'error');
   }
 }
 
@@ -1226,9 +1358,9 @@ async function runTool() {
   const dangerous = dangerousActions(tool, values);
   if (dangerous.length > 0) {
     const confirmed = window.confirm(
-      'Atenção! Esta execução pode alterar ou remover dados:\n\n' +
-        dangerous.map((action) => `- ${action}`).join('\n') +
-        '\n\nDeseja continuar?'
+      t('confirm.destructive', {
+        actions: dangerous.map((action) => `- ${action}`).join('\n')
+      })
     );
     if (!confirmed) return;
   }
@@ -1242,7 +1374,7 @@ async function runTool() {
     current: 0,
     total: 0,
     percent: null,
-    message: 'Iniciando execução...'
+    message: t('summary.init')
   });
 
   markRunning({ startedAt });
@@ -1272,11 +1404,11 @@ async function stopTool() {
   try {
     const result = await api.stopRun();
     if (!result || !result.stopped) {
-      showToast('Não há processo ativo para interromper.', 'error');
+      showToast(t('toast.noActiveRun'), 'error');
       els.btnStop.disabled = false;
       return;
     }
-    showToast('Interrompendo a execução...', 'info');
+    showToast(t('toast.stopping'), 'info');
   } catch (error) {
     els.btnStop.disabled = false;
     showToast(cleanError(error), 'error');
@@ -1287,7 +1419,7 @@ async function saveConfig() {
   if (!state.activeTool) return;
   try {
     await api.saveConfig(state.activeTool.id, collectValues());
-    showToast('Configuração salva.', 'success');
+    showToast(t('toast.configSaved'), 'success');
   } catch (error) {
     showToast(cleanError(error), 'error', 6000);
   }
@@ -1357,12 +1489,12 @@ function handleRunEvent(event) {
       els.btnStop.disabled = false;
       els.btnSave.disabled = false;
 
-      els.runState.textContent = event.status;
+      els.runState.textContent = displayStatus(event.status);
       els.runState.className = `tag ${statusKind(event.status) ? `is-${statusKind(event.status)}` : 'is-light'}`;
-      els.runStarted.textContent = `Finalizado em ${formatDate(event.finishedAt)}`;
+      els.runStarted.textContent = t('status.finishedAt', { date: formatDate(event.finishedAt) });
 
       const pillKind = statusKind(event.status);
-      setTag(els.runPill, event.status, pillKind || 'light');
+      setTag(els.runPill, displayStatus(event.status), pillKind || 'light');
 
       applyProgress({ ...event.progress, status: event.status }, event.status);
 
@@ -1375,16 +1507,16 @@ function handleRunEvent(event) {
       state.summary.result = event.status;
       state.summary.message =
         event.status === 'Sucesso'
-          ? 'Concluído com sucesso'
+          ? t('summary.done')
           : event.status === 'Interrompido'
-            ? 'Processamento interrompido'
-            : 'Processamento finalizado com falha';
+            ? t('summary.finishedInterrupted')
+            : t('summary.finishedFailure');
       addActivity(
         event.status === 'Sucesso'
-          ? 'Processamento concluído com sucesso'
+          ? t('summary.finishedSuccess')
           : event.status === 'Interrompido'
-            ? 'Processamento interrompido'
-            : 'Processamento finalizado com falha',
+            ? t('summary.finishedInterrupted')
+            : t('summary.finishedFailure'),
         'final'
       );
       stopDurationTimer(event.finishedAt);
@@ -1393,11 +1525,11 @@ function handleRunEvent(event) {
       renderLastStatus(event.status, event.finishedAt);
 
       if (event.status === 'Sucesso') {
-        showToast('Execução concluída com sucesso.', 'success', 5000);
+        showToast(t('toast.runSuccess'), 'success', 5000);
       } else if (event.status === 'Interrompido') {
-        showToast('Execução interrompida.', 'info', 5000);
+        showToast(t('toast.runInterrupted'), 'info', 5000);
       } else {
-        showToast('A execução falhou. Verifique o log.', 'error', 7000);
+        showToast(t('toast.runFailed'), 'error', 7000);
       }
 
       if (state.activeTool && state.activeTool.id === event.scriptName) {
@@ -1430,12 +1562,6 @@ function bindEvents() {
   els.btnStop.addEventListener('click', stopTool);
   els.btnSave.addEventListener('click', saveConfig);
   els.btnAbout.addEventListener('click', openAbout);
-  els.btnOpenRepo.addEventListener('click', async () => {
-    const result = await api.openRepository();
-    if (!result || !result.ok) {
-      showToast((result && result.error) || 'Não foi possível abrir o repositório.', 'error');
-    }
-  });
   els.btnToggleLog.addEventListener('click', () => setLogExpanded(!state.logExpanded));
 
   for (const element of els.aboutModal.querySelectorAll('[data-close-about]')) {
@@ -1445,7 +1571,7 @@ function bindEvents() {
   els.btnOpenLogs.addEventListener('click', async () => {
     const result = await api.openLogsFolder();
     if (!result || !result.ok) {
-      showToast((result && result.error) || 'Não foi possível abrir a pasta de logs.', 'error');
+      showToast((result && result.error) || t('toast.openLogsError'), 'error');
     }
   });
 
@@ -1482,15 +1608,20 @@ async function init() {
   api.onRunEvent(handleRunEvent);
 
   try {
-    const [tools, system, active] = await Promise.all([
+    const [tools, system, active, i18nData] = await Promise.all([
       api.getTools(),
       api.getSystemInfo(),
-      api.getActiveRun()
+      api.getActiveRun(),
+      api.getI18n()
     ]);
 
     state.tools = tools;
     state.system = system;
+    state.language = (i18nData && i18nData.language) || system.language || 'en';
+    state.i18n = (i18nData && i18nData.messages) || state.i18n;
 
+    applyStaticTranslations();
+    document.body.classList.remove('i18n-pending');
     renderSystemInfo();
     renderNav();
 
@@ -1506,14 +1637,16 @@ async function init() {
     }
 
     if (!system.perl || !system.perl.found) {
-      showToast(
-        'Perl não encontrado. No Windows, reinstale o aplicativo; em desenvolvimento, rode npm run prepare:perl.',
-        'error',
-        8000
-      );
+      showToast(t('toast.perlMissing'), 'error', 8000);
     }
   } catch (error) {
-    showToast(`Falha ao carregar o Turbo IMAP: ${cleanError(error)}`, 'error', 9000);
+    document.body.classList.remove('i18n-pending');
+    const detail = cleanError(error);
+    const message =
+      state.i18n && state.i18n.patterns && state.i18n.patterns['toast.loadError']
+        ? t('toast.loadError', { message: detail })
+        : `Could not load Turbo IMAP: ${detail}`;
+    showToast(message, 'error', 9000);
   }
 }
 

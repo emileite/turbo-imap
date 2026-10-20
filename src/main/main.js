@@ -8,6 +8,7 @@ const path = require('node:path');
 const { TurboDatabase } = require('./database');
 const { Executor } = require('./executor');
 const { getTool, getPublicTools, buildArgs, redactArgs } = require('../shared/tools');
+const { normalizeLanguage, loadLocale, createI18n, translateDeep, format } = require('../shared/i18n');
 
 const SPLASH_DURATION_MS = 4000;
 const MAX_LOG_READ_BYTES = 1024 * 1024;
@@ -31,6 +32,9 @@ let db = null;
 let executor = null;
 let activeRun = null;
 let perlInfoPromise = null;
+let detectedLocale = 'en';
+let activeLanguage = 'en';
+let i18n = null;
 
 function resolvePerlCommand() {
   if (process.env.TURBO_IMAP_PERL) return process.env.TURBO_IMAP_PERL;
@@ -82,7 +86,10 @@ function probePerl() {
               found: false,
               command: perlCommand,
               version: '',
-              error: error.code === 'ENOENT' ? 'Perl não encontrado no PATH.' : error.message
+              error:
+                error.code === 'ENOENT'
+                  ? (i18n ? i18n.t('main.perlNotFound') : 'Perl not found in PATH.')
+                  : error.message
             });
             return;
           }
@@ -171,46 +178,18 @@ function writeThunderbirdGuide(options) {
   const prefix = String((options && options.filePrefix) || 'TurboIMAP-');
   const from = String((options && options.dateFrom) || '').trim();
   const to = String((options && options.dateTo) || '').trim();
-  const dateRange =
+  const noLimit = i18n ? i18n.t('guide.noLimit') : 'no limit';
+  const range =
     from || to
-      ? `${from || 'sem limite'} até ${to || 'sem limite'}`
-      : 'todas as mensagens';
+      ? `${from || noLimit} - ${to || noLimit}`
+      : (i18n ? i18n.t('guide.allMessages') : 'all messages');
 
-  const guide = `Turbo IMAP - Backup para Thunderbird
-====================================
-
-Arquivos Mbox gerados com o prefixo: ${prefix}
-Intervalo de datas: ${dateRange}
-
-OPCAO 1 - Abrir diretamente no Thunderbird (Pastas Locais)
-----------------------------------------------------------
-1. Feche o Thunderbird completamente.
-2. No Turbo IMAP, use como pasta de destino:
-   ...\\Thunderbird\\Profiles\\<seu-perfil>\\Mail\\Local Folders
-3. Execute o backup.
-4. Abra o Thunderbird. As pastas aparecerao em "Pastas locais"
-   com o prefixo ${prefix} (por exemplo, ${prefix}INBOX).
-   Se nao aparecerem, feche e abra o Thunderbird novamente.
-
-OPCAO 2 - Exportar agora e importar depois
-------------------------------------------
-1. Exporte para uma pasta de backup comum.
-2. No Thunderbird, instale a extensao ImportExportTools NG.
-3. Clique com o botao direito em "Pastas locais" e escolha
-   ImportExportTools NG > Importar arquivo mbox.
-4. Selecione cada arquivo Mbox gerado.
-
-ATENCAO
--------
-- Feche o Thunderbird antes de gravar diretamente em Mail/Local Folders.
-- O prefixo evita sobrescrever pastas existentes como Inbox e Sent.
-- Os arquivos Mbox nao possuem extensao quando usados como pastas locais.
-- Para um novo backup parcial, mantenha o Resume ativado (-n).
-
-Gerado pelo Turbo IMAP.
-`;
-
-  const guideFile = path.join(targetDir, 'LEIA-ME-THUNDERBIRD.txt');
+  const template =
+    i18n && i18n.thunderbirdGuide
+      ? i18n.thunderbirdGuide
+      : 'Turbo IMAP - Thunderbird backup\n\nPrefix: {prefix}\nDate range: {range}\n';
+  const guide = format(template, { prefix, range });
+  const guideFile = path.join(targetDir, i18n ? i18n.guideFile : 'LEIA-ME-THUNDERBIRD.txt');
   fs.writeFileSync(guideFile, '\uFEFF' + guide, 'utf8');
 }
 
@@ -225,11 +204,13 @@ function cleanupFiles(files) {
 }
 
 async function startRun(scriptName, values) {
-  if (!executor) throw new Error('Executor ainda não inicializado.');
-  if (executor.isRunning) throw new Error('Já existe uma execução em andamento.');
+  if (!executor) throw new Error(i18n ? i18n.t('main.executorNotReady') : 'Executor not initialized yet.');
+  if (executor.isRunning) {
+    throw new Error(i18n ? i18n.t('main.alreadyRunning') : 'An execution is already running.');
+  }
 
   const tool = getTool(scriptName);
-  if (!tool) throw new Error('Ferramenta desconhecida.');
+  if (!tool) throw new Error(i18n ? i18n.t('main.unknownTool') : 'Unknown tool.');
 
   const source = normalizeAccount(values && values.source);
   const destination = normalizeAccount(values && values.destination);
@@ -240,7 +221,9 @@ async function startRun(scriptName, values) {
   const tempFiles = [];
 
   if (!fs.existsSync(scriptPath)) {
-    throw new Error(`Script Perl não encontrado: ${tool.script}`);
+    throw new Error(
+      i18n ? i18n.t('main.scriptNotFound', { name: tool.script }) : `Script not found: ${tool.script}`
+    );
   }
 
   try {
@@ -261,7 +244,9 @@ async function startRun(scriptName, values) {
       runOptions.__usersFile = tempFile;
     } else if (tool.special === 'maildirToIMAP') {
       const maildir = String(options.maildir || '').trim();
-      if (!maildir) throw new Error('Preencha o campo "Diretório Maildir local".');
+      if (!maildir) {
+        throw new Error(i18n ? i18n.t('main.maildir') : 'Fill in the local Maildir directory.');
+      }
       const tempFile = createUsersFile(
         scriptName,
         `${maildir},${destination.user},${destination.pass}\n`
@@ -277,7 +262,7 @@ async function startRun(scriptName, values) {
         destination,
         options: runOptions,
         resume
-      })
+      }, i18n)
     ];
     const displayArgs = [scriptPath, ...redactArgs(args.slice(1), { source, destination })];
 
@@ -367,13 +352,32 @@ async function createWindows() {
   });
   await splashWindow.loadFile(splashPath);
 
+  if (i18n) {
+    const splashText = {
+      lang: activeLanguage,
+      subtitle: i18n.t('splash.subtitle'),
+      message: i18n.t('splash.message'),
+      footer: i18n.t('splash.footer')
+    };
+    try {
+      await splashWindow.webContents.executeJavaScript(`
+        document.documentElement.lang = ${JSON.stringify(activeLanguage)};
+        document.querySelector('.subtitle').textContent = ${JSON.stringify(splashText.subtitle)};
+        document.querySelector('.message').textContent = ${JSON.stringify(splashText.message)};
+        document.querySelector('.footer').textContent = ${JSON.stringify(splashText.footer)};
+      `);
+    } catch {
+      // Splash text is cosmetic; continue if execution is blocked.
+    }
+  }
+
   const startupStarted = Date.now();
 
   db = new TurboDatabase();
   await db.init(dbPath, { safeStorage });
   await db.resetInterruptedConfigurations();
 
-  executor = new Executor({ logsDir, progressDir, perlCommand });
+  executor = new Executor({ logsDir, progressDir, perlCommand, i18n });
 
   executor.on('event', (event) => {
     if (event.type !== 'done') {
@@ -456,7 +460,28 @@ function showMainWindow() {
 }
 
 function registerIpc() {
-  ipcMain.handle('tools:list', () => getPublicTools());
+  ipcMain.handle('tools:list', () => {
+    const tools = getPublicTools();
+    return i18n ? translateDeep(tools, i18n.trText) : tools;
+  });
+
+  ipcMain.handle('i18n:get', () => {
+    if (!i18n) {
+      return {
+        language: 'en',
+        messages: { strings: {}, patterns: {}, aboutHtml: '', thunderbirdHtml: '' }
+      };
+    }
+    return {
+      language: i18n.language,
+      messages: {
+        strings: i18n.strings,
+        patterns: i18n.patterns,
+        aboutHtml: i18n.aboutHtml,
+        thunderbirdHtml: i18n.thunderbirdHtml
+      }
+    };
+  });
 
   ipcMain.handle('system:info', async () => {
     const perl = await probePerl();
@@ -465,6 +490,8 @@ function registerIpc() {
       : 0;
     return {
       appVersion: app.getVersion(),
+      language: activeLanguage,
+      locale: detectedLocale,
       versions: {
         electron: process.versions.electron,
         chrome: process.versions.chrome,
@@ -538,7 +565,7 @@ function registerIpc() {
   ipcMain.handle('log:open', async (event, logFile) => {
     const resolved = resolveWithin(logsDir, logFile);
     if (!resolved || !fs.existsSync(resolved)) {
-      return { ok: false, error: 'Arquivo de log não encontrado.' };
+      return { ok: false, error: i18n ? i18n.t('main.logNotFound') : 'Log file not found.' };
     }
     const error = await shell.openPath(resolved);
     return { ok: !error, error };
@@ -575,14 +602,21 @@ if (!gotLock) {
     Menu.setApplicationMenu(null);
     app.setAppUserModelId('com.turboimap.app');
 
+    const systemLocale = typeof app.getSystemLocale === 'function' ? app.getSystemLocale() : app.getLocale();
+    detectedLocale = process.env.TURBO_IMAP_LANG || systemLocale;
+    activeLanguage = normalizeLanguage(detectedLocale);
+    i18n = createI18n(activeLanguage, loadLocale(activeLanguage));
+
     try {
       await handleDirectory();
       await createWindows();
       registerIpc();
     } catch (error) {
       dialog.showErrorBox(
-        'Falha ao iniciar o Turbo IMAP',
-        `Não foi possível inicializar o aplicativo.\n\n${error.message}`
+        'Turbo IMAP',
+        i18n
+          ? i18n.t('main.initError', { message: error.message })
+          : `Could not initialize the application.\n\n${error.message}`
       );
       app.quit();
     }

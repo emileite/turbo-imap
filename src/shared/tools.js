@@ -1521,43 +1521,79 @@ function clean(value) {
   return typeof value === 'string' ? value.trim() : value;
 }
 
-function assertNoSeparator(value, label) {
+function assertNoSeparator(value, label, i18n) {
   if (String(value).includes('/')) {
-    throw new Error(`${label} não pode conter "/" porque os scripts usam esse caractere como separador.`);
+    throw new Error(
+      i18n
+        ? i18n.t('validation.separator', { label })
+        : `${label} não pode conter "/" porque os scripts usam esse caractere como separador.`
+    );
   }
-  assertNoNewline(value, label);
+  assertNoNewline(value, label, i18n);
 }
 
-function assertNoNewline(value, label) {
+function assertNoNewline(value, label, i18n) {
   if (/[\r\n]/.test(String(value))) {
-    throw new Error(`${label} não pode conter quebras de linha.`);
+    throw new Error(
+      i18n ? i18n.t('validation.newline', { label }) : `${label} não pode conter quebras de linha.`
+    );
   }
 }
 
-function requireAccount(account, label, options = {}) {
+function requireAccount(account, label, options = {}, i18n = null) {
   const hostRequired = options.hostRequired !== false;
   const allowSlashInPass = options.allowSlashInPass === true;
   const host = clean(account && account.host);
   const user = clean(account && account.user);
   const pass = account && typeof account.pass === 'string' ? account.pass : '';
 
-  if (hostRequired && !host) throw new Error(`Informe o servidor de ${label}.`);
-  if (!user) throw new Error(`Informe o usuário de ${label}.`);
-  if (!pass) throw new Error(`Informe a senha de ${label}.`);
+  if (hostRequired && !host) {
+    throw new Error(
+      i18n ? i18n.t('validation.host', { label }) : `Informe o servidor de ${label}.`
+    );
+  }
+  if (!user) {
+    throw new Error(
+      i18n ? i18n.t('validation.user', { label }) : `Informe o usuário de ${label}.`
+    );
+  }
+  if (!pass) {
+    throw new Error(
+      i18n ? i18n.t('validation.pass', { label }) : `Informe a senha de ${label}.`
+    );
+  }
 
-  if (hostRequired) assertNoSeparator(host, `Servidor de ${label}`);
-  assertNoSeparator(user, `Usuário de ${label}`);
+  if (hostRequired) {
+    assertNoSeparator(
+      host,
+      i18n ? i18n.t('label.server', { label }) : `Servidor de ${label}`,
+      i18n
+    );
+  }
+  assertNoSeparator(
+    user,
+    i18n ? i18n.t('label.user', { label }) : `Usuário de ${label}`,
+    i18n
+  );
   if (allowSlashInPass) {
-    assertNoNewline(pass, `Senha de ${label}`);
+    assertNoNewline(
+      pass,
+      i18n ? i18n.t('label.pass', { label }) : `Senha de ${label}`,
+      i18n
+    );
   } else {
-    assertNoSeparator(pass, `Senha de ${label}`);
+    assertNoSeparator(
+      pass,
+      i18n ? i18n.t('label.pass', { label }) : `Senha de ${label}`,
+      i18n
+    );
   }
 
   return { host, user, pass };
 }
 
-function credential(account, label) {
-  const data = requireAccount(account, label);
+function credential(account, label, i18n = null) {
+  const data = requireAccount(account, label, {}, i18n);
   return `${data.host}/${data.user}/${data.pass}`;
 }
 
@@ -1565,39 +1601,47 @@ function isMeaningful(value) {
   return value !== undefined && value !== null && String(value).trim() !== '';
 }
 
-function buildArgs(scriptName, values) {
+function buildArgs(scriptName, values, i18n = null) {
   const tool = getTool(scriptName);
-  if (!tool) throw new Error('Ferramenta desconhecida.');
+  if (!tool) {
+    throw new Error(i18n ? i18n.t('validation.unknownTool') : 'Ferramenta desconhecida.');
+  }
 
   const source = (values && values.source) || {};
   const destination = (values && values.destination) || {};
   const options = (values && values.options) || {};
   const args = [];
+  const sourceLabel = i18n ? i18n.t('label.source') : 'origem';
+  const destinationLabel = i18n ? i18n.t('label.destination') : 'destino';
 
   if (tool.special === 'migrateIMAP') {
-    const src = requireAccount(source, 'origem', { allowSlashInPass: true });
-    const dst = requireAccount(destination, 'destino', { allowSlashInPass: true });
-    if (!options.__usersFile) throw new Error('Não foi possível preparar o arquivo de usuários.');
+    const src = requireAccount(source, sourceLabel, { allowSlashInPass: true }, i18n);
+    const dst = requireAccount(destination, destinationLabel, { allowSlashInPass: true }, i18n);
+    if (!options.__usersFile) {
+      throw new Error(i18n ? i18n.t('main.usersFile') : 'Não foi possível preparar o arquivo de usuários.');
+    }
     args.push('-S', src.host, '-D', dst.host, '-i', options.__usersFile);
   } else if (tool.special === 'maildirToIMAP') {
-    const dst = requireAccount(destination, 'destino', { allowSlashInPass: true });
-    if (!options.__usersFile) throw new Error('Não foi possível preparar o arquivo de usuários.');
+    const dst = requireAccount(destination, destinationLabel, { allowSlashInPass: true }, i18n);
+    if (!options.__usersFile) {
+      throw new Error(i18n ? i18n.t('main.usersFile') : 'Não foi possível preparar o arquivo de usuários.');
+    }
     args.push('-i', options.__usersFile, '-D', dst.host);
   } else if (tool.special === 'imapSearch') {
-    const src = requireAccount(source, 'origem');
+    const src = requireAccount(source, sourceLabel, {}, i18n);
     args.push(`${src.host}/${src.user}/${src.pass}`);
   } else if (tool.special === 'oauth2') {
-    const src = requireAccount(source, 'origem', { hostRequired: false, allowSlashInPass: true });
+    const src = requireAccount(source, sourceLabel, { hostRequired: false, allowSlashInPass: true }, i18n);
     args.push(src.user, src.pass);
   } else if (tool.credentialStyle === 'separate') {
-    const src = requireAccount(source, 'origem', { allowSlashInPass: true });
+    const src = requireAccount(source, sourceLabel, { allowSlashInPass: true }, i18n);
     args.push('-h', src.host, '-u', src.user, '-p', src.pass);
   } else {
     if (tool.source && tool.sourceFlag) {
-      args.push(tool.sourceFlag, credential(source, 'origem'));
+      args.push(tool.sourceFlag, credential(source, sourceLabel, i18n));
     }
     if (tool.destination && tool.destFlag) {
-      args.push(tool.destFlag, credential(destination, 'destino'));
+      args.push(tool.destFlag, credential(destination, destinationLabel, i18n));
     }
   }
 
@@ -1610,7 +1654,12 @@ function buildArgs(scriptName, values) {
     }
 
     if (!isMeaningful(raw)) {
-      if (field.required) throw new Error(`Preencha o campo "${field.label}".`);
+      if (field.required) {
+        const label = i18n ? i18n.trText(field.label) : field.label;
+        throw new Error(
+          i18n ? i18n.t('validation.requiredField', { label }) : `Preencha o campo "${label}".`
+        );
+      }
       continue;
     }
 
@@ -1620,21 +1669,35 @@ function buildArgs(scriptName, values) {
     if (field.type === 'number') {
       const number = Number(value);
       if (!Number.isFinite(number) || number <= 0) {
-        throw new Error(`O campo "${field.label}" deve ser um número positivo.`);
+        const label = i18n ? i18n.trText(field.label) : field.label;
+        throw new Error(
+          i18n
+            ? i18n.t('validation.numberPositive', { label })
+            : `O campo "${label}" deve ser um número positivo.`
+        );
       }
       if (field.min && number < field.min) {
-        throw new Error(`O campo "${field.label}" deve ser maior ou igual a ${field.min}.`);
+        const label = i18n ? i18n.trText(field.label) : field.label;
+        throw new Error(
+          i18n
+            ? i18n.t('validation.numberMin', { label, min: field.min })
+            : `O campo "${label}" deve ser maior ou igual a ${field.min}.`
+        );
       }
       value = String(Math.trunc(number));
     }
 
-    assertNoNewline(value, field.label);
+    assertNoNewline(value, i18n ? i18n.trText(field.label) : field.label, i18n);
     args.push(field.flag, value);
   }
 
   if (scriptName === 'imap_to_maildir') {
     const maildirUser = clean(options.maildirUser) || clean(source.user);
-    if (!maildirUser) throw new Error('Informe o usuário do Maildir ou o usuário da origem.');
+    if (!maildirUser) {
+      throw new Error(
+        i18n ? i18n.t('validation.maildirUser') : 'Informe o usuário do Maildir ou o usuário da origem.'
+      );
+    }
     args.push('-u', maildirUser);
   }
 
@@ -1643,13 +1706,19 @@ function buildArgs(scriptName, values) {
       .split(/[;\n]+/)
       .map((item) => item.trim())
       .filter(Boolean);
-    if (!criteria.length) throw new Error('Informe ao menos um critério de busca.');
+    if (!criteria.length) {
+      throw new Error(
+        i18n ? i18n.t('validation.criteria') : 'Informe ao menos um critério de busca.'
+      );
+    }
     args.push(...criteria);
   }
 
   if (tool.requiredOneOf) {
     const satisfied = tool.requiredOneOf.keys.some((key) => isMeaningful(options[key]));
-    if (!satisfied) throw new Error(tool.requiredOneOf.message);
+    if (!satisfied) {
+      throw new Error(i18n ? i18n.trText(tool.requiredOneOf.message) : tool.requiredOneOf.message);
+    }
   }
 
   if (tool.resume && tool.resume.flag && values && values.resume) {

@@ -54,8 +54,8 @@
   com status `Falha`, log, histórico e progresso atualizados.
 - Empacotamento `electron-builder --dir` validado: `src/`, `assets/`, `app.asar` e
   `resources/scripts` presentes; app empacotado inicializou e encontrou os 25 scripts.
-- Build NSIS Windows 1.0.7 (referencia do repositorio do projeto) em
-  `dist/Turbo IMAP Setup 1.0.7.exe` (~158 MB).
+- Ultimo release publicado: 1.0.7.
+- Build Windows 1.1.0 gerado em `dist/Turbo IMAP Setup 1.1.0.exe` (~158 MB); release 1.1.0 ainda nao publicado.
 - Runtime Strawberry Perl 5.42.3.1 empacotado em `resources/strawberry`; `perl.exe`,
   IO::Socket::SSL, Net::SSLeay e `imapPing.pl` testados via Wine a partir do pacote.
 - Correcoes de compatibilidade Windows nos scripts: `imap_to_maildir.pl` usa

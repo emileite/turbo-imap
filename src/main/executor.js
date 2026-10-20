@@ -22,14 +22,14 @@ const PROGRESS_RULES = [
     pattern: /source\s+.*?\s+has\s+(\d+)\s+messages/i,
     apply: (match, setProgress, setStage) => {
       setProgress(0, Number(match[1]));
-      setStage(`Analisando pasta com ${match[1]} mensagens`);
+      setStage('progress.analyzingFolder', { count: match[1] }, `Analisando pasta com ${match[1]} mensagens`);
     }
   },
   {
     pattern: /there are\s+(\d+)\s+messages\s+in/i,
     apply: (match, setProgress, setStage) => {
       setProgress(0, Number(match[1]));
-      setStage(`Pasta com ${match[1]} mensagens`);
+      setStage('progress.folderMessages', { count: match[1] }, `Pasta com ${match[1]} mensagens`);
     }
   },
   {
@@ -43,46 +43,51 @@ const PROGRESS_RULES = [
   {
     pattern: /number of mailboxes to process:\s*(\d+)/i,
     apply: (match, setProgress, setStage) =>
-      setStage(`Processando ${match[1]} pasta(s)`)
+      setStage('progress.processingFolders', { count: match[1] }, `Processando ${match[1]} pasta(s)`)
   },
   {
     pattern: /there are\s+(\d+)\s+mailboxes\s+to\s+(?:sync|process)/i,
     apply: (match, setProgress, setStage) =>
-      setStage(`Sincronizando ${match[1]} pasta(s)`)
+      setStage('progress.syncingFolders', { count: match[1] }, `Sincronizando ${match[1]} pasta(s)`)
   },
   {
     pattern: /checking mailbox\s+(.+)/i,
-    apply: (match, setProgress, setStage) => setStage(`Verificando pasta ${match[1].trim()}`)
+    apply: (match, setProgress, setStage) =>
+      setStage('progress.checkingFolder', { folder: match[1].trim() }, `Verificando pasta ${match[1].trim()}`)
   },
   {
     pattern: /purging mailbox\s+(.+)/i,
-    apply: (match, setProgress, setStage) => setStage(`Limpando pasta ${match[1].trim()}`)
+    apply: (match, setProgress, setStage) =>
+      setStage('progress.purgingFolder', { folder: match[1].trim() }, `Limpando pasta ${match[1].trim()}`)
   },
   {
     pattern: /copying\s+(\d+)\s+messages\s+in\s+(.+)/i,
     apply: (match, setProgress, setStage) => {
       setProgress(0, Number(match[1]));
-      setStage(`Copiando ${match[1]} mensagens de ${match[2].trim()}`);
+      setStage('progress.copyingMessages', { count: match[1], folder: match[2].trim() }, `Copiando ${match[1]} mensagens de ${match[2].trim()}`);
     }
   },
   {
     pattern: /connecting to\s+(.+)/i,
-    apply: (match, setProgress, setStage) => setStage(`Conectando a ${match[1].trim()}`)
+    apply: (match, setProgress, setStage) =>
+      setStage('progress.connecting', { host: match[1].trim() }, `Conectando a ${match[1].trim()}`)
   },
   {
     pattern: /logged in as\s+(.+)/i,
-    apply: (match, setProgress, setStage) => setStage(`Autenticado como ${match[1].trim()}`)
+    apply: (match, setProgress, setStage) =>
+      setStage('progress.authenticated', { user: match[1].trim() }, `Autenticado como ${match[1].trim()}`)
   },
   {
     pattern: /total messages purged\s+(\d+)/i,
     apply: (match, setProgress, setStage) => {
       setProgress(Number(match[1]), Number(match[1]));
-      setStage(`${match[1]} mensagens purgadas`);
+      setStage('progress.purged', { count: match[1] }, `${match[1]} mensagens purgadas`);
     }
   },
   {
     pattern: /^summary/i,
-    apply: (match, setProgress, setStage) => setStage('Finalizando e gerando resumo')
+    apply: (match, setProgress, setStage) =>
+      setStage('progress.summary', {}, 'Finalizando e gerando resumo')
   }
 ];
 
@@ -101,15 +106,31 @@ function timestampForFile(date = new Date()) {
 }
 
 class Executor extends EventEmitter {
-  constructor({ logsDir, progressDir, perlCommand = 'perl' }) {
+  constructor({ logsDir, progressDir, perlCommand = 'perl', i18n = null }) {
     super();
     this.logsDir = logsDir;
     this.progressDir = progressDir;
     this.perlCommand = perlCommand;
+    this.i18n = i18n;
     this.child = null;
     this.state = null;
     this.progressTimer = null;
     this.killTimer = null;
+  }
+
+  t(key, params, fallback) {
+    return this.i18n ? this.i18n.t(key, params) : fallback;
+  }
+
+  statusLabel(status) {
+    const keys = {
+      'Sucesso': 'status.success',
+      'Falha': 'status.failure',
+      'Interrompido': 'status.interrupted',
+      'Em execução': 'status.running'
+    };
+    const key = keys[status];
+    return key && this.i18n ? this.i18n.t(key) : status;
   }
 
   get isRunning() {
@@ -136,7 +157,7 @@ class Executor extends EventEmitter {
 
   async start({ scriptName, args, cwd, env, secrets = [], displayArgs = null, logFile }) {
     if (this.isRunning) {
-      throw new Error('Já existe uma execução em andamento.');
+      throw new Error(this.t('main.alreadyRunning', {}, 'Já existe uma execução em andamento.'));
     }
 
     fs.mkdirSync(this.logsDir, { recursive: true });
@@ -157,7 +178,7 @@ class Executor extends EventEmitter {
         current: 0,
         total: 0,
         percent: null,
-        message: 'Iniciando execução...'
+        message: this.t('progress.init', {}, 'Iniciando execução...')
       },
       recentLogs: [],
       secrets: secrets.filter((secret) => typeof secret === 'string' && secret.length > 0),
@@ -175,10 +196,10 @@ class Executor extends EventEmitter {
     });
     this.writeProgressFile(true);
 
-    this.logLine(`=== Turbo IMAP - ${scriptName} ===`);
-    this.logLine(`Início: ${startedAt}`);
-    this.logLine(`Comando: ${commandLine}`);
-    this.logLine(`Diretório de trabalho: ${cwd}`);
+    this.logLine(this.t('executor.header', { script: scriptName }, `=== Turbo IMAP - ${scriptName} ===`));
+    this.logLine(this.t('executor.start', { date: startedAt }, `Início: ${startedAt}`));
+    this.logLine(this.t('executor.command', { command: commandLine }, `Comando: ${commandLine}`));
+    this.logLine(this.t('executor.cwd', { cwd }, `Diretório de trabalho: ${cwd}`));
     this.logLine('');
 
     const childEnv = {
@@ -205,7 +226,7 @@ class Executor extends EventEmitter {
     this.child = child;
 
     child.once('error', (error) => {
-      this.logLine(`Erro ao iniciar o processo: ${error.message}`);
+      this.logLine(this.t('executor.spawnError', { message: error.message }, `Erro ao iniciar o processo: ${error.message}`));
       this.finish({ error, code: null, signal: null });
     });
 
@@ -269,7 +290,8 @@ class Executor extends EventEmitter {
       this.emitProgress();
     };
 
-    const setStage = (message) => {
+    const setStage = (key, params, fallback) => {
+      const message = this.t(key, params, fallback);
       this.state.progress.message = message;
       this.emit('event', { type: 'status', message });
       this.emitProgress(false);
@@ -292,7 +314,15 @@ class Executor extends EventEmitter {
         : null;
     progress.message =
       progress.total > 0
-        ? `${progress.current} de ${progress.total} - ${progress.percent}%`
+        ? this.t(
+            'progress.count',
+            {
+              current: progress.current,
+              total: progress.total,
+              percent: progress.percent
+            },
+            `${progress.current} de ${progress.total} - ${progress.percent}%`
+          )
         : progress.message;
 
     this.emit('event', {
@@ -392,25 +422,29 @@ class Executor extends EventEmitter {
     this.state.finalStatus = status;
 
     if (criticalOutput && !error && code === 0) {
-      this.logLine('Erro crítico detectado na saída do script.');
+      this.logLine(this.t('executor.critical', {}, 'Erro crítico detectado na saída do script.'));
     }
 
     if (error) {
-      this.logLine(`Falha ao executar: ${error.message}`);
+      this.logLine(this.t('executor.spawnError', { message: error.message }, `Falha ao executar: ${error.message}`));
     } else if (signal) {
-      this.logLine(`Processo finalizado pelo sinal ${signal}.`);
+      this.logLine(this.t('executor.finishedSignal', { signal }, `Processo finalizado pelo sinal ${signal}.`));
     } else {
-      this.logLine(`Processo finalizado com código ${code}.`);
+      this.logLine(this.t('executor.finishedCode', { code }, `Processo finalizado com código ${code}.`));
     }
-    this.logLine(`Fim: ${new Date().toISOString()}`);
-    this.logLine(`Status: ${status}`);
+    this.logLine(this.t('executor.end', { date: new Date().toISOString() }, `Fim: ${new Date().toISOString()}`));
+    this.logLine(this.t('executor.status', { status: this.statusLabel(status) }, `Status: ${status}`));
 
     if (status === 'Sucesso') {
       this.state.progress.current = this.state.progress.total || this.state.progress.current;
       this.state.progress.percent = 100;
-      this.state.progress.message = 'Concluído com sucesso';
-    } else if (this.state.progress.message === 'Iniciando execução...') {
-      this.state.progress.message = status;
+      this.state.progress.message = this.t('progress.done', {}, 'Concluído com sucesso');
+    } else if (this.state.progress.message === this.t('progress.init', {}, 'Iniciando execução...')) {
+      this.state.progress.message = this.t(
+        status === 'Interrompido' ? 'progress.interrupted' : 'progress.failed',
+        {},
+        status
+      );
     }
 
     this.writeProgressFile(true);

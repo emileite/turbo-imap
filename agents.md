@@ -22,7 +22,7 @@
   que logs solicitados estao dentro de `logs/`.
 - Nunca registrar senhas em logs, mensagens de erro ou no histórico. Redigir a linha de
   comando antes de gravar.
-- Nomes de ferramentas, botoes e mensagens de interface em portugues do Brasil.
+- Todo texto visivel deve passar pelo sistema de i18n em `src/locales/`: ingles (`en.json`) como padrao e portugues (`pt-BR.json`) quando o sistema estiver em portugues. Nao adicionar novos labels fixos em portugues no HTML/JS.
 - Sem comentarios desnecessarios no codigo.
 
 ## IPC
@@ -31,6 +31,7 @@ Canais `invoke` (renderer -> main):
 
 - `tools:list`
 - `system:info`
+- `i18n:get`
 - `config:get`
 - `config:save`
 - `run:start`
@@ -41,6 +42,7 @@ Canais `invoke` (renderer -> main):
 - `log:read`
 - `log:open`
 - `logs:open-folder`
+- `external:open-repository`
 
 Canal de eventos (main -> renderer):
 
