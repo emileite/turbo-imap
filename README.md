@@ -20,6 +20,7 @@ The interface follows the computer language: **Portuguese (`pt-BR`)** when the s
 language is Portuguese, otherwise **English (`en`)**.
 
 **Official repository:** <https://github.com/emileite/turbo-imap>  
+**Website:** <https://emileite.github.io/turbo-imap/>  
 **Downloads:** [Releases](https://github.com/emileite/turbo-imap/releases)
 
 ---
@@ -359,6 +360,7 @@ In the packaged application, these files live in Electron's `userData` directory
 ```text
 assets/               logo, Windows/macOS icons and splash
 docs/screenshots/     English and Portuguese screenshots used by the READMEs
+page/                 static landing page (GitHub Pages)
 logs/                 runtime logs
 progress/             progress snapshots
 scripts/              rick-sanders-imap-tools suite (.pl)

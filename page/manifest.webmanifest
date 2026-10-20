@@ -1,0 +1,19 @@
+{
+  "name": "Turbo IMAP",
+  "short_name": "Turbo IMAP",
+  "description": "Backup, migração e manutenção de contas de e-mail IMAP e POP3.",
+  "lang": "pt-BR",
+  "start_url": "/turbo-imap/",
+  "scope": "/turbo-imap/",
+  "display": "standalone",
+  "background_color": "#0b1f33",
+  "theme_color": "#0b1f33",
+  "icons": [
+    {
+      "src": "assets/logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

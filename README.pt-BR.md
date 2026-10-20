@@ -17,6 +17,7 @@ guiados, executa os scripts Perl em subprocessos, acompanha o progresso, grava l
 mantém o histórico de cada ferramenta.
 
 **Repositório oficial:** <https://github.com/emileite/turbo-imap>  
+**Site oficial:** <https://emileite.github.io/turbo-imap/>  
 **Downloads:** [Releases](https://github.com/emileite/turbo-imap/releases)
 
 ---
@@ -334,15 +335,17 @@ No aplicativo empacotado, esses dados ficam no `userData` do Electron
 
 ```text
 assets/               logo, ícones Windows/macOS e splash
-docs/screenshots/pt-BR/     capturas de tela usadas no README
+docs/screenshots/     capturas de tela em inglês e português
+page/                 landing page estática (GitHub Pages)
 logs/                 logs gerados em tempo de execução
 progress/             snapshots de progresso
 scripts/              suíte rick-sanders-imap-tools (.pl)
+src/locales/          traduções em inglês e português
 src/main/             main, SQLite e executor de processos
 src/preload/          ponte IPC segura
 src/renderer/         interface Bulma, formulários, resumo e modal Sobre
-src/shared/           definições das ferramentas e montagem de argumentos
-tools/                preparação do Perl/sqlite Windows, logo e Bulma
+src/shared/           definições das ferramentas, argumentos e i18n
+tools/                preparação do Perl/sqlite, logo e Bulma
 vendor/strawberry/    runtime portátil do Perl para o build Windows
 ```
 

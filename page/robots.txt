@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://emileite.github.io/turbo-imap/sitemap.xml
