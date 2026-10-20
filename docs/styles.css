@@ -103,6 +103,28 @@ a:hover {
   padding-left: 0;
 }
 
+.navbar-item.lang-switch {
+  padding-left: 0.35rem;
+  padding-right: 0.35rem;
+}
+
+.lang-switch a {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.26rem 0.62rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: #42576b;
+  font-size: 0.74rem;
+  font-weight: 700;
+}
+
+.lang-switch a:hover {
+  border-color: var(--blue);
+  color: var(--blue);
+  background: #f4f9fd;
+}
+
 .brand-name {
   color: var(--ink);
   font-size: 1.02rem;

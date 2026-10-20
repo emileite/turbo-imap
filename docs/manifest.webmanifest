@@ -1,8 +1,8 @@
 {
   "name": "Turbo IMAP",
   "short_name": "Turbo IMAP",
-  "description": "Backup, migração e manutenção de contas de e-mail IMAP e POP3.",
-  "lang": "pt-BR",
+  "description": "IMAP and POP3 email backup, migration and maintenance.",
+  "lang": "en",
   "start_url": "/turbo-imap/",
   "scope": "/turbo-imap/",
   "display": "standalone",

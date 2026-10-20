@@ -1,878 +1,731 @@
-<!doctype html>
-<html lang="pt-BR" data-theme="light">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Turbo IMAP — Backup e migração de e-mails IMAP/POP3</title>
-    <meta
-      name="description"
-      content="Backup e migração de e-mails de Gmail, Outlook e Yahoo via IMAP/POP3. Exporte para Mbox, Maildir e Thunderbird. Grátis e open source para Windows, Linux e macOS."
-    >
-    <meta
-      name="keywords"
-      content="backup de e-mail, backup Gmail, backup Outlook, backup Yahoo Mail, migração IMAP, POP3, exportar Mbox, Maildir, Thunderbird, backup webmail, ferramenta IMAP, open source"
-    >
-    <meta name="author" content="Turbo IMAP">
-    <meta name="robots" content="index, follow, max-image-preview:large">
-    <meta name="theme-color" content="#0b1f33">
-    <meta name="format-detection" content="telephone=no">
-    <meta
-      http-equiv="Content-Security-Policy"
-      content="default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self' 'nonce-turboimap-jsonld'; font-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'self'; form-action 'none'"
-    >
+<!DOCTYPE html>
 
-    <link rel="canonical" href="https://emileite.github.io/turbo-imap/">
-    <link rel="alternate" hreflang="pt-BR" href="https://emileite.github.io/turbo-imap/">
-    <link rel="alternate" hreflang="x-default" href="https://emileite.github.io/turbo-imap/">
-
-    <meta property="og:type" content="website">
-    <meta property="og:site_name" content="Turbo IMAP">
-    <meta property="og:locale" content="pt_BR">
-    <meta property="og:title" content="Turbo IMAP — Backup e migração de e-mails IMAP/POP3">
-    <meta
-      property="og:description"
-      content="Proteja suas caixas de Gmail, Outlook/Microsoft 365, Yahoo Mail e outros webmails. Backup local, migração e exportação para Mbox, Maildir e Thunderbird."
-    >
-    <meta property="og:url" content="https://emileite.github.io/turbo-imap/">
-    <meta property="og:image" content="https://emileite.github.io/turbo-imap/assets/og-image.png">
-    <meta property="og:image:width" content="1200">
-    <meta property="og:image:height" content="630">
-    <meta property="og:image:alt" content="Turbo IMAP — backup e migração de e-mails IMAP/POP3">
-
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Turbo IMAP — Backup e migração de e-mails IMAP/POP3">
-    <meta
-      name="twitter:description"
-      content="Backup local e migração de contas de e-mail via IMAP/POP3. Exporte para Mbox, Maildir e Thunderbird. Windows, Linux e macOS."
-    >
-    <meta name="twitter:image" content="https://emileite.github.io/turbo-imap/assets/og-image.png">
-
-    <link rel="icon" href="assets/favicon.ico" sizes="any">
-    <link rel="icon" type="image/png" sizes="512x512" href="assets/logo.png">
-    <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
-    <link rel="manifest" href="manifest.webmanifest">
-    <link rel="preload" as="image" href="assets/logo.png">
-    <link rel="stylesheet" href="vendor/bulma.min.css">
-    <link rel="stylesheet" href="styles.css">
-
-    <script type="application/ld+json" nonce="turboimap-jsonld">
-      {
-        "@context": "https://schema.org",
-        "@graph": [
-          {
-            "@type": "WebSite",
-            "@id": "https://emileite.github.io/turbo-imap/#website",
-            "url": "https://emileite.github.io/turbo-imap/",
-            "name": "Turbo IMAP",
-            "description": "Backup, migração, exportação e manutenção de contas de e-mail via IMAP e POP3.",
-            "inLanguage": "pt-BR",
-            "publisher": { "@id": "https://emileite.github.io/turbo-imap/#organization" }
-          },
-          {
-            "@type": "Organization",
-            "@id": "https://emileite.github.io/turbo-imap/#organization",
-            "name": "Turbo IMAP",
-            "url": "https://github.com/emileite/turbo-imap",
-            "logo": "https://emileite.github.io/turbo-imap/assets/logo.png",
-            "sameAs": ["https://github.com/emileite/turbo-imap"]
-          },
-          {
-            "@type": "SoftwareApplication",
-            "@id": "https://emileite.github.io/turbo-imap/#app",
-            "name": "Turbo IMAP",
-            "operatingSystem": "Windows 10, Windows 11, Linux, macOS",
-            "applicationCategory": "UtilitiesApplication",
-            "applicationSubCategory": "Email backup and migration",
-            "softwareVersion": "1.1.0",
-            "description": "Aplicativo desktop para backup, migração, exportação, importação, limpeza e diagnóstico de contas de e-mail IMAP e POP3, com suporte a Gmail, Outlook/Microsoft 365, Yahoo Mail e outros webmails.",
-            "url": "https://emileite.github.io/turbo-imap/",
-            "downloadUrl": "https://github.com/emileite/turbo-imap/releases/tag/v1.1.0",
-            "license": "https://opensource.org/licenses/MIT",
-            "inLanguage": "pt-BR",
-            "screenshot": [
-              "https://emileite.github.io/turbo-imap/assets/screenshot-main.png",
-              "https://emileite.github.io/turbo-imap/assets/screenshot-summary.png"
-            ],
-            "featureList": [
-              "Backup de e-mail IMAP e POP3",
-              "Migração entre provedores",
-              "Exportação para Mbox, Maildir e Thunderbird",
-              "Filtros de data inicial e final",
-              "Retomada de execuções",
-              "25 ferramentas de migração, backup, limpeza e auditoria"
-            ],
-            "offers": {
-              "@type": "Offer",
-              "price": "0",
-              "priceCurrency": "BRL"
-            },
-            "author": { "@id": "https://emileite.github.io/turbo-imap/#organization" },
-            "publisher": { "@id": "https://emileite.github.io/turbo-imap/#organization" }
-          },
-          {
-            "@type": "FAQPage",
-            "@id": "https://emileite.github.io/turbo-imap/#faq",
-            "mainEntity": [
-              {
-                "@type": "Question",
-                "name": "O Turbo IMAP funciona com Gmail, Outlook e Yahoo Mail?",
-                "acceptedAnswer": {
-                  "@type": "Answer",
-                  "text": "Sim. O Turbo IMAP funciona com qualquer conta que permita acesso por IMAP ou POP3, incluindo Gmail, Outlook/Microsoft 365, Yahoo Mail, iCloud Mail, Zoho Mail e Fastmail. O provedor pode exigir senha de aplicativo ou autenticação OAuth2."
-                }
-              },
-              {
-                "@type": "Question",
-                "name": "Preciso instalar Perl para usar o Turbo IMAP?",
-                "acceptedAnswer": {
-                  "@type": "Answer",
-                  "text": "No Windows, não. O instalador inclui o Strawberry Perl portátil. No Linux e no macOS é necessário ter o Perl disponível no PATH do sistema."
-                }
-              },
-              {
-                "@type": "Question",
-                "name": "Meus e-mails ou senhas são enviados para algum servidor do Turbo IMAP?",
-                "acceptedAnswer": {
-                  "@type": "Answer",
-                  "text": "Não. O processamento acontece no seu computador. As credenciais ficam no banco SQLite local, protegidas pelo safeStorage do Electron quando disponível, e não são enviadas para servidores do projeto."
-                }
-              },
-              {
-                "@type": "Question",
-                "name": "Consigo fazer backup de apenas um período de mensagens?",
-                "acceptedAnswer": {
-                  "@type": "Answer",
-                  "text": "Sim. As ferramentas de cópia e backup aceitam data inicial e data final no formato DD-MMM-YYYY, permitindo exportar apenas o intervalo desejado."
-                }
-              },
-              {
-                "@type": "Question",
-                "name": "O backup pode ser aberto no Thunderbird?",
-                "acceptedAnswer": {
-                  "@type": "Answer",
-                  "text": "Sim. O Turbo IMAP exporta arquivos Mbox no formato nativo das Pastas Locais do Thunderbird. Também é possível importar os arquivos com a extensão ImportExportTools NG."
-                }
-              },
-              {
-                "@type": "Question",
-                "name": "O Turbo IMAP é gratuito?",
-                "acceptedAnswer": {
-                  "@type": "Answer",
-                  "text": "Sim. O aplicativo é open source e distribuído sob a licença MIT. Os scripts Perl originais mantêm a licença da suíte rick-sanders-imap-tools."
-                }
-              }
-            ]
-          }
-        ]
+<html data-theme="light" lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<title>Turbo IMAP — IMAP/POP3 email backup and migration</title>
+<meta content="Back up and migrate email from Gmail, Outlook and Yahoo via IMAP/POP3. Export to Mbox, Maildir and Thunderbird. Free and open source for Windows, Linux and macOS." name="description"/>
+<meta content="email backup, Gmail backup, Outlook backup, Yahoo Mail backup, IMAP migration, POP3, export Mbox, Maildir, Thunderbird, webmail backup, IMAP tool, open source" name="keywords"/>
+<meta content="Turbo IMAP" name="author"/>
+<meta content="index, follow, max-image-preview:large" name="robots"/>
+<meta content="#0b1f33" name="theme-color"/>
+<meta content="telephone=no" name="format-detection"/>
+<meta content="default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self' 'nonce-turboimap-jsonld'; font-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'self'; form-action 'none'" http-equiv="Content-Security-Policy"/>
+<link href="https://emileite.github.io/turbo-imap/" rel="canonical"/>
+<link href="https://emileite.github.io/turbo-imap/" hreflang="en" rel="alternate"/>
+<link href="https://emileite.github.io/turbo-imap/pt.html" hreflang="pt-BR" rel="alternate"/>
+<link href="https://emileite.github.io/turbo-imap/" hreflang="x-default" rel="alternate"/>
+<meta content="website" property="og:type"/>
+<meta content="Turbo IMAP" property="og:site_name"/>
+<meta content="en_US" property="og:locale"/>
+<meta content="pt_BR" property="og:locale:alternate"/>
+<meta content="Turbo IMAP — IMAP/POP3 email backup and migration" property="og:title"/>
+<meta content="Protect your Gmail, Outlook/Microsoft 365, Yahoo Mail and other webmail mailboxes. Local backup, migration and export to Mbox, Maildir and Thunderbird." property="og:description"/>
+<meta content="https://emileite.github.io/turbo-imap/" property="og:url"/>
+<meta content="https://emileite.github.io/turbo-imap/assets/og-image-en.png" property="og:image"/>
+<meta content="1200" property="og:image:width"/>
+<meta content="630" property="og:image:height"/>
+<meta content="Turbo IMAP — IMAP/POP3 email backup and migration" property="og:image:alt"/>
+<meta content="summary_large_image" name="twitter:card"/>
+<meta content="Turbo IMAP — IMAP/POP3 email backup and migration" name="twitter:title"/>
+<meta content="Local backup and migration of email accounts via IMAP/POP3. Export to Mbox, Maildir and Thunderbird. Windows, Linux and macOS." name="twitter:description"/>
+<meta content="https://emileite.github.io/turbo-imap/assets/og-image-en.png" name="twitter:image"/>
+<link href="assets/favicon.ico" rel="icon" sizes="any"/>
+<link href="assets/logo.png" rel="icon" sizes="512x512" type="image/png"/>
+<link href="assets/apple-touch-icon.png" rel="apple-touch-icon"/>
+<link href="manifest.webmanifest" rel="manifest"/>
+<link as="image" href="assets/logo.png" rel="preload"/>
+<link href="vendor/bulma.min.css" rel="stylesheet"/>
+<link href="styles.css" rel="stylesheet"/>
+<script nonce="turboimap-jsonld" type="application/ld+json">{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebSite",
+      "@id": "https://emileite.github.io/turbo-imap/#website",
+      "url": "https://emileite.github.io/turbo-imap/",
+      "name": "Turbo IMAP",
+      "description": "Backup, migration, export and maintenance for IMAP and POP3 email accounts.",
+      "inLanguage": "en",
+      "publisher": {
+        "@id": "https://emileite.github.io/turbo-imap/#organization"
       }
-    </script>
-  </head>
-  <body>
-    <a class="skip-link" href="#conteudo">Pular para o conteúdo</a>
-
-    <nav class="navbar landing-navbar is-fixed-top" role="navigation" aria-label="Navegação principal">
-      <div class="container">
-        <div class="navbar-brand">
-          <a class="navbar-item brand" href="#topo" aria-label="Turbo IMAP — início">
-            <img src="assets/logo.png" alt="Logo do Turbo IMAP" width="40" height="40">
-            <span class="brand-name">Turbo IMAP</span>
-          </a>
-          <a
-            role="button"
-            class="navbar-burger"
-            aria-label="Abrir menu"
-            aria-expanded="false"
-            data-target="main-nav"
-          >
-            <span aria-hidden="true"></span>
-            <span aria-hidden="true"></span>
-            <span aria-hidden="true"></span>
-          </a>
-        </div>
-
-        <div id="main-nav" class="navbar-menu">
-          <div class="navbar-end">
-            <a class="navbar-item" href="#recursos">Recursos</a>
-            <a class="navbar-item" href="#como-funciona">Como funciona</a>
-            <a class="navbar-item" href="#thunderbird">Thunderbird</a>
-            <a class="navbar-item" href="#downloads">Downloads</a>
-            <a class="navbar-item" href="#faq">FAQ</a>
-            <div class="navbar-item">
-              <a
-                class="button is-small is-primary"
-                href="https://github.com/emileite/turbo-imap"
-                target="_blank"
-                rel="noopener"
-              >
+    },
+    {
+      "@type": "Organization",
+      "@id": "https://emileite.github.io/turbo-imap/#organization",
+      "name": "Turbo IMAP",
+      "url": "https://github.com/emileite/turbo-imap",
+      "logo": "https://emileite.github.io/turbo-imap/assets/logo.png",
+      "sameAs": [
+        "https://github.com/emileite/turbo-imap"
+      ]
+    },
+    {
+      "@type": "SoftwareApplication",
+      "@id": "https://emileite.github.io/turbo-imap/#app",
+      "name": "Turbo IMAP",
+      "operatingSystem": "Windows 10, Windows 11, Linux, macOS",
+      "applicationCategory": "UtilitiesApplication",
+      "applicationSubCategory": "Email backup and migration",
+      "softwareVersion": "1.1.0",
+      "description": "Desktop application for backup, migration, export, import, cleanup and diagnostics of IMAP and POP3 email accounts, with support for Gmail, Outlook/Microsoft 365, Yahoo Mail and other webmail providers.",
+      "url": "https://emileite.github.io/turbo-imap/",
+      "downloadUrl": "https://github.com/emileite/turbo-imap/releases/tag/v1.1.0",
+      "license": "https://opensource.org/licenses/MIT",
+      "inLanguage": "en",
+      "screenshot": [
+        "https://emileite.github.io/turbo-imap/assets/screenshot-main-en.png",
+        "https://emileite.github.io/turbo-imap/assets/screenshot-summary-en.png"
+      ],
+      "featureList": [
+        "IMAP and POP3 email backup",
+        "Migration between providers",
+        "Export to Mbox, Maildir and Thunderbird",
+        "Start and end date filters",
+        "Resume interrupted runs",
+        "25 migration, backup, cleanup and audit tools"
+      ],
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "BRL"
+      },
+      "author": {
+        "@id": "https://emileite.github.io/turbo-imap/#organization"
+      },
+      "publisher": {
+        "@id": "https://emileite.github.io/turbo-imap/#organization"
+      }
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://emileite.github.io/turbo-imap/#faq",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Does Turbo IMAP work with Gmail, Outlook and Yahoo Mail?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. Turbo IMAP works with any account that allows IMAP or POP3 access, including Gmail, Outlook/Microsoft 365, Yahoo Mail, iCloud Mail, Zoho Mail and Fastmail. The provider may require an app password or OAuth2 authentication."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Do I need to install Perl to use Turbo IMAP?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "On Windows, no. The installer includes portable Strawberry Perl. On Linux and macOS, Perl must be available in the system PATH."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Are my emails or passwords sent to any Turbo IMAP server?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No. Processing happens on your computer. Credentials are stored in the local SQLite database, protected by Electron safeStorage when available, and are not sent to project servers."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can I back up only a specific period of messages?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. Copy and backup tools accept start and end dates in DD-MMM-YYYY format, allowing you to export only the desired range."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can the backup be opened in Thunderbird?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. Turbo IMAP exports Mbox files in Thunderbird's native Local Folders format. You can also import the files with the ImportExportTools NG extension."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is Turbo IMAP free?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. The app is open source and distributed under the MIT license. The original Perl scripts keep the license of the rick-sanders-imap-tools suite."
+          }
+        }
+      ]
+    }
+  ]
+}</script>
+</head>
+<body>
+<a class="skip-link" href="#conteudo">Skip to content</a>
+<nav aria-label="Main navigation" class="navbar landing-navbar is-fixed-top" role="navigation">
+<div class="container">
+<div class="navbar-brand">
+<a aria-label="Turbo IMAP — home" class="navbar-item brand" href="#topo">
+<img alt="Turbo IMAP logo" height="40" src="assets/logo.png" width="40"/>
+<span class="brand-name">Turbo IMAP</span>
+</a>
+<a aria-expanded="false" aria-label="Open menu" class="navbar-burger" data-target="main-nav" role="button">
+<span aria-hidden="true"></span>
+<span aria-hidden="true"></span>
+<span aria-hidden="true"></span>
+</a>
+</div>
+<div class="navbar-menu" id="main-nav">
+<div class="navbar-end">
+<a class="navbar-item" href="#recursos">Features</a>
+<a class="navbar-item" href="#como-funciona">How it works</a>
+<a class="navbar-item" href="#thunderbird">Thunderbird</a>
+<a class="navbar-item" href="#downloads">Downloads</a>
+<a class="navbar-item" href="#faq">FAQ</a>
+<div class="navbar-item lang-switch">
+<a href="pt.html" hreflang="pt-BR" lang="pt-BR">Português</a>
+</div>
+<div class="navbar-item">
+<a class="button is-small is-primary" href="https://github.com/emileite/turbo-imap" rel="noopener" target="_blank">
                 GitHub
               </a>
-            </div>
-          </div>
-        </div>
-      </div>
-    </nav>
-
-    <main id="conteudo">
-      <section id="topo" class="hero-section">
-        <div class="hero-shape hero-shape-one" aria-hidden="true"></div>
-        <div class="hero-shape hero-shape-two" aria-hidden="true"></div>
-        <div class="container">
-          <div class="hero-grid">
-            <div class="hero-copy">
-              <p class="eyebrow">Backup local · IMAP + POP3</p>
-              <h1>Seus e-mails, fora das mãos do provedor.</h1>
-              <p class="hero-lead">
-                Faça backup completo, migre e preserve mensagens de Gmail,
-                Outlook/Microsoft 365, Yahoo Mail e qualquer webmail compatível com IMAP
-                ou POP3 — com uma interface gráfica e sem linha de comando.
+</div>
+</div>
+</div>
+</div>
+</nav>
+<main id="conteudo">
+<section class="hero-section" id="topo">
+<div aria-hidden="true" class="hero-shape hero-shape-one"></div>
+<div aria-hidden="true" class="hero-shape hero-shape-two"></div>
+<div class="container">
+<div class="hero-grid">
+<div class="hero-copy">
+<p class="eyebrow">Local backup · IMAP + POP3</p>
+<h1>Your email, out of the provider's hands.</h1>
+<p class="hero-lead">
+                Back up, migrate and preserve messages from Gmail, Outlook/Microsoft 365, Yahoo Mail and any webmail that supports IMAP or POP3 — with a graphical interface and no command line.
               </p>
-              <div class="hero-actions">
-                <a
-                  class="button is-primary is-medium"
-                  href="https://github.com/emileite/turbo-imap/releases/download/v1.1.0/Turbo.IMAP.Setup.1.1.0.exe"
-                  rel="noopener"
-                >
-                  Baixar para Windows
+<div class="hero-actions">
+<a class="button is-primary is-medium" href="https://github.com/emileite/turbo-imap/releases/download/v1.1.0/Turbo.IMAP.Setup.1.1.0.exe" rel="noopener">
+                  Download for Windows
                 </a>
-                <a class="button is-light is-medium" href="#downloads">Outros sistemas</a>
-                <a
-                  class="button is-ghost is-medium"
-                  href="https://github.com/emileite/turbo-imap"
-                  target="_blank"
-                  rel="noopener"
-                >
-                  Ver no GitHub
+<a class="button is-light is-medium" href="#downloads">Other platforms</a>
+<a class="button is-ghost is-medium" href="https://github.com/emileite/turbo-imap" rel="noopener" target="_blank">
+                  View on GitHub
                 </a>
-              </div>
-              <p class="hero-meta">
-                Gratuito e open source · Interface em português e inglês · 25 ferramentas · Windows, Linux e macOS
+</div>
+<p class="hero-meta">
+                Free and open source · English and Portuguese interface · 25 tools · Windows, Linux and macOS
               </p>
-            </div>
-
-            <div class="hero-visual">
-              <div class="screenshot-frame">
-                <div class="frame-bar" aria-hidden="true">
-                  <span></span><span></span><span></span>
-                  <span class="frame-title">Turbo IMAP · Backup para Thunderbird</span>
-                </div>
-                <img
-                  src="assets/screenshot-main.png"
-                  alt="Tela do Turbo IMAP mostrando o formulário de backup IMAP para Thunderbird e as instruções de importação"
-                  width="1200"
-                  height="741"
-                  fetchpriority="high"
-                >
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section class="provider-strip" aria-label="Provedores de e-mail compatíveis">
-        <div class="container">
-          <p class="provider-heading">Compatível com webmails que oferecem IMAP ou POP3</p>
-          <ul class="provider-list">
-            <li>Gmail</li>
-            <li>Outlook / Microsoft 365</li>
-            <li>Yahoo Mail</li>
-            <li>iCloud Mail</li>
-            <li>Zoho Mail</li>
-            <li>Fastmail</li>
-            <li>outros provedores</li>
-          </ul>
-          <p class="trademark-note">
-            Marcas de terceiros pertencem aos seus respectivos proprietários. O Turbo IMAP
-            não é afiliado nem endossado por esses serviços.
+</div>
+<div class="hero-visual">
+<div class="screenshot-frame">
+<div aria-hidden="true" class="frame-bar">
+<span></span><span></span><span></span>
+<span class="frame-title">Turbo IMAP · Thunderbird backup</span>
+</div>
+<img alt="Turbo IMAP screen showing the IMAP-to-Thunderbird backup form and import instructions" fetchpriority="high" height="741" src="assets/screenshot-main-en.png" width="1200"/>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section aria-label="Compatible email providers" class="provider-strip">
+<div class="container">
+<p class="provider-heading">Works with webmail providers that offer IMAP or POP3</p>
+<ul class="provider-list">
+<li>Gmail</li>
+<li>Outlook / Microsoft 365</li>
+<li>Yahoo Mail</li>
+<li>iCloud Mail</li>
+<li>Zoho Mail</li>
+<li>Fastmail</li>
+<li>other providers</li>
+</ul>
+<p class="trademark-note">
+            Third-party trademarks belong to their respective owners. Turbo IMAP is not affiliated with or endorsed by these services.
           </p>
-        </div>
-      </section>
-
-      <section class="section section-light" id="porque">
-        <div class="container">
-          <div class="section-heading">
-            <p class="section-kicker">Por que fazer backup</p>
-            <h2>Quando o provedor muda, seu histórico continua seu.</h2>
-            <p class="section-subtitle">
-              Uma caixa de e-mail guarda anos de trabalho, comprovantes, conversas e
-              contatos. Ter uma cópia local é a forma mais segura de não depender das
-              regras, do armazenamento ou da disponibilidade de um serviço externo.
+</div>
+</section>
+<section class="section section-light" id="porque">
+<div class="container">
+<div class="section-heading">
+<p class="section-kicker">Why back up</p>
+<h2>When the provider changes, your history stays yours.</h2>
+<p class="section-subtitle">
+              An email account holds years of work, receipts, conversations and contacts. A local copy is the safest way to avoid depending on an external service's rules, storage or availability.
             </p>
-          </div>
-
-          <div class="columns is-variable is-5">
-            <div class="column is-4">
-              <article class="value-card">
-                <div class="feature-icon" aria-hidden="true">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                    <path d="M4 7h16v10H4z" />
-                    <path d="M4 7l8 6 8-6" />
-                  </svg>
-                </div>
-                <h3>Contas e regras mudam</h3>
-                <p>
-                  Limites de armazenamento, contas encerradas e mudanças de política podem
-                  bloquear o acesso ao histórico. Um backup local mantém tudo acessível.
+</div>
+<div class="columns is-variable is-5">
+<div class="column is-4">
+<article class="value-card">
+<div aria-hidden="true" class="feature-icon">
+<svg fill="none" stroke="currentColor" stroke-width="1.8" viewbox="0 0 24 24">
+<path d="M4 7h16v10H4z"></path>
+<path d="M4 7l8 6 8-6"></path>
+</svg>
+</div>
+<h3>Accounts and rules change</h3>
+<p>
+                  Storage limits, closed accounts and policy changes can block access to your history. A local backup keeps everything accessible.
                 </p>
-              </article>
-            </div>
-            <div class="column is-4">
-              <article class="value-card">
-                <div class="feature-icon" aria-hidden="true">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                    <path d="M4 7h6l2 2h8v10H4z" />
-                    <path d="M8 4h5l2 3" />
-                  </svg>
-                </div>
-                <h3>Migração sem perder pastas</h3>
-                <p>
-                  Copie caixas completas entre Gmail, Outlook/Microsoft 365, Yahoo Mail e
-                  outros provedores, preservando mensagens e estrutura de pastas.
+</article>
+</div>
+<div class="column is-4">
+<article class="value-card">
+<div aria-hidden="true" class="feature-icon">
+<svg fill="none" stroke="currentColor" stroke-width="1.8" viewbox="0 0 24 24">
+<path d="M4 7h6l2 2h8v10H4z"></path>
+<path d="M8 4h5l2 3"></path>
+</svg>
+</div>
+<h3>Migration without losing folders</h3>
+<p>
+                  Copy entire mailboxes between Gmail, Outlook/Microsoft 365, Yahoo Mail and other providers, preserving messages and folder structure.
                 </p>
-              </article>
-            </div>
-            <div class="column is-4">
-              <article class="value-card">
-                <div class="feature-icon" aria-hidden="true">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                    <rect x="4" y="5" width="16" height="14" rx="2" />
-                    <path d="M8 9h8M8 13h6" />
-                  </svg>
-                </div>
-                <h3>Arquivo local e offline</h3>
-                <p>
-                  Exporte para Mbox, Maildir ou Thunderbird e abra quando quiser, mesmo sem
-                  internet ou sem acesso à conta original.
+</article>
+</div>
+<div class="column is-4">
+<article class="value-card">
+<div aria-hidden="true" class="feature-icon">
+<svg fill="none" stroke="currentColor" stroke-width="1.8" viewbox="0 0 24 24">
+<rect height="14" rx="2" width="16" x="4" y="5"></rect>
+<path d="M8 9h8M8 13h6"></path>
+</svg>
+</div>
+<h3>Local, offline archive</h3>
+<p>
+                  Export to Mbox, Maildir or Thunderbird and open it whenever you want, even without internet or access to the original account.
                 </p>
-              </article>
-            </div>
+</article>
+</div>
+</div>
+<div class="local-note">
+<strong>Your data stays with you.</strong> Turbo IMAP does not send messages or credentials to project servers. All processing happens on your machine.
           </div>
-
-          <div class="local-note">
-            <strong>Seus dados ficam com você.</strong> O Turbo IMAP não envia mensagens nem
-            credenciais para servidores do projeto. Todo o processamento acontece na sua
-            máquina.
-          </div>
-        </div>
-      </section>
-
-      <section class="section section-white" id="recursos">
-        <div class="container">
-          <div class="section-heading">
-            <p class="section-kicker">Recursos</p>
-            <h2>Um kit completo para cuidar do seu e-mail.</h2>
-            <p class="section-subtitle">
-              25 ferramentas para backup, migração, limpeza e diagnóstico, com formulários
-              guiados, progresso, logs e histórico local.
+</div>
+</section>
+<section class="section section-white" id="recursos">
+<div class="container">
+<div class="section-heading">
+<p class="section-kicker">Features</p>
+<h2>A complete toolkit for your email.</h2>
+<p class="section-subtitle">
+              25 tools for backup, migration, cleanup and diagnostics, with guided forms, progress, logs and local history.
             </p>
-          </div>
-
-          <div class="feature-grid">
-            <article class="feature-card">
-              <div class="feature-icon" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                  <path d="M3 6h18v12H3z" />
-                  <path d="M3 7l9 6 9-6" />
-                </svg>
-              </div>
-              <h3>Backup IMAP e POP3</h3>
-              <p>Baixe caixas completas ou apenas o período que você precisa.</p>
-            </article>
-
-            <article class="feature-card">
-              <div class="feature-icon" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                  <path d="M4 8h13l-3-3M20 16H7l3 3" />
-                </svg>
-              </div>
-              <h3>Migração entre provedores</h3>
-              <p>Copie e sincronize contas sem perder pastas, flags ou mensagens.</p>
-            </article>
-
-            <article class="feature-card">
-              <div class="feature-icon" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                  <path d="M4 7h6l2 2h8v10H4z" />
-                  <path d="M8 4h5l2 3" />
-                </svg>
-              </div>
-              <h3>Mbox, Maildir e Thunderbird</h3>
-              <p>Exporte para formatos locais e abra no Thunderbird ou em outro cliente.</p>
-            </article>
-
-            <article class="feature-card">
-              <div class="feature-icon" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                  <rect x="4" y="5" width="16" height="15" rx="2" />
-                  <path d="M4 9h16M8 3v4M16 3v4" />
-                </svg>
-              </div>
-              <h3>Filtros de data</h3>
-              <p>Use data inicial e final para backups incrementais e migrações parciais.</p>
-            </article>
-
-            <article class="feature-card">
-              <div class="feature-icon" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                  <path d="M20 12a8 8 0 1 1-2.3-5.7" />
-                  <path d="M20 4v5h-5" />
-                </svg>
-              </div>
-              <h3>Retomada e Resume</h3>
-              <p>Continue de onde parou e evite copiar mensagens que já existem.</p>
-            </article>
-
-            <article class="feature-card">
-              <div class="feature-icon" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                  <path d="M14 4l6 6M5 19l3-6 7-7 3 3-7 7-6 3z" />
-                </svg>
-              </div>
-              <h3>Limpeza e manutenção</h3>
-              <p>Remova duplicatas, esvazie pastas e gerencie a lixeira com segurança.</p>
-            </article>
-
-            <article class="feature-card">
-              <div class="feature-icon" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                  <path d="M5 19V9M12 19V5M19 19v-7" />
-                  <path d="M3 19h18" />
-                </svg>
-              </div>
-              <h3>Auditoria e diagnóstico</h3>
-              <p>Tamanhos, pastas, capacidades do servidor, ping e teste de OAuth2.</p>
-            </article>
-
-            <article class="feature-card">
-              <div class="feature-icon" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                  <rect x="3" y="5" width="18" height="14" rx="2" />
-                  <path d="M7 10l3 2-3 2M12 15h5" />
-                </svg>
-              </div>
-              <h3>Logs e progresso</h3>
-              <p>Resumo amigável, terminal completo e arquivos de log para cada execução.</p>
-            </article>
-
-            <article class="feature-card">
-              <div class="feature-icon" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                  <path d="M12 3l7 3v6c0 4-3 7-7 9-4-2-7-5-7-9V6l7-3z" />
-                  <path d="M9 12l2 2 4-4" />
-                </svg>
-              </div>
-              <h3>Segurança local</h3>
-              <p>Credenciais no SQLite local, senhas fora dos logs e IPC isolado.</p>
-            </article>
-          </div>
-
-          <div class="tool-strip">
-            <span class="tool-chip">Migração</span>
-            <span class="tool-chip">Backup e conversão</span>
-            <span class="tool-chip">Limpeza</span>
-            <span class="tool-chip">Auditoria</span>
-            <span class="tool-chip">Diagnóstico</span>
-            <span class="tool-chip">Thunderbird</span>
-          </div>
-        </div>
-      </section>
-
-      <section class="section section-navy" id="como-funciona">
-        <div class="container">
-          <div class="section-heading section-heading-inverse">
-            <p class="section-kicker section-kicker-light">Como funciona</p>
-            <h2>Simples como 1, 2, 3.</h2>
-            <p class="section-subtitle">
-              Você não precisa memorizar parâmetros de Perl. O Turbo IMAP monta os comandos,
-              valida os campos e acompanha cada etapa.
+</div>
+<div class="feature-grid">
+<article class="feature-card">
+<div aria-hidden="true" class="feature-icon">
+<svg fill="none" stroke="currentColor" stroke-width="1.8" viewbox="0 0 24 24">
+<path d="M3 6h18v12H3z"></path>
+<path d="M3 7l9 6 9-6"></path>
+</svg>
+</div>
+<h3>IMAP and POP3 backup</h3>
+<p>Download entire mailboxes or only the period you need.</p>
+</article>
+<article class="feature-card">
+<div aria-hidden="true" class="feature-icon">
+<svg fill="none" stroke="currentColor" stroke-width="1.8" viewbox="0 0 24 24">
+<path d="M4 8h13l-3-3M20 16H7l3 3"></path>
+</svg>
+</div>
+<h3>Migration between providers</h3>
+<p>Copy and synchronize accounts without losing folders, flags or messages.</p>
+</article>
+<article class="feature-card">
+<div aria-hidden="true" class="feature-icon">
+<svg fill="none" stroke="currentColor" stroke-width="1.8" viewbox="0 0 24 24">
+<path d="M4 7h6l2 2h8v10H4z"></path>
+<path d="M8 4h5l2 3"></path>
+</svg>
+</div>
+<h3>Mbox, Maildir and Thunderbird</h3>
+<p>Export to local formats and open in Thunderbird or another client.</p>
+</article>
+<article class="feature-card">
+<div aria-hidden="true" class="feature-icon">
+<svg fill="none" stroke="currentColor" stroke-width="1.8" viewbox="0 0 24 24">
+<rect height="15" rx="2" width="16" x="4" y="5"></rect>
+<path d="M4 9h16M8 3v4M16 3v4"></path>
+</svg>
+</div>
+<h3>Date filters</h3>
+<p>Use start and end dates for incremental backups and partial migrations.</p>
+</article>
+<article class="feature-card">
+<div aria-hidden="true" class="feature-icon">
+<svg fill="none" stroke="currentColor" stroke-width="1.8" viewbox="0 0 24 24">
+<path d="M20 12a8 8 0 1 1-2.3-5.7"></path>
+<path d="M20 4v5h-5"></path>
+</svg>
+</div>
+<h3>Resume and continuation</h3>
+<p>Continue where you left off and avoid copying messages that already exist.</p>
+</article>
+<article class="feature-card">
+<div aria-hidden="true" class="feature-icon">
+<svg fill="none" stroke="currentColor" stroke-width="1.8" viewbox="0 0 24 24">
+<path d="M14 4l6 6M5 19l3-6 7-7 3 3-7 7-6 3z"></path>
+</svg>
+</div>
+<h3>Cleanup and maintenance</h3>
+<p>Remove duplicates, empty folders and manage trash safely.</p>
+</article>
+<article class="feature-card">
+<div aria-hidden="true" class="feature-icon">
+<svg fill="none" stroke="currentColor" stroke-width="1.8" viewbox="0 0 24 24">
+<path d="M5 19V9M12 19V5M19 19v-7"></path>
+<path d="M3 19h18"></path>
+</svg>
+</div>
+<h3>Audit and diagnostics</h3>
+<p>Sizes, folders, server capabilities, ping and OAuth2 testing.</p>
+</article>
+<article class="feature-card">
+<div aria-hidden="true" class="feature-icon">
+<svg fill="none" stroke="currentColor" stroke-width="1.8" viewbox="0 0 24 24">
+<rect height="14" rx="2" width="18" x="3" y="5"></rect>
+<path d="M7 10l3 2-3 2M12 15h5"></path>
+</svg>
+</div>
+<h3>Logs and progress</h3>
+<p>Friendly summary, complete terminal output and log files for every run.</p>
+</article>
+<article class="feature-card">
+<div aria-hidden="true" class="feature-icon">
+<svg fill="none" stroke="currentColor" stroke-width="1.8" viewbox="0 0 24 24">
+<path d="M12 3l7 3v6c0 4-3 7-7 9-4-2-7-5-7-9V6l7-3z"></path>
+<path d="M9 12l2 2 4-4"></path>
+</svg>
+</div>
+<h3>Local security</h3>
+<p>Credentials in local SQLite, passwords kept out of logs and isolated IPC.</p>
+</article>
+</div>
+<div class="tool-strip">
+<span class="tool-chip">Migration</span>
+<span class="tool-chip">Backup and conversion</span>
+<span class="tool-chip">Cleanup</span>
+<span class="tool-chip">Audit</span>
+<span class="tool-chip">Diagnostics</span>
+<span class="tool-chip">Thunderbird</span>
+</div>
+</div>
+</section>
+<section class="section section-navy" id="como-funciona">
+<div class="container">
+<div class="section-heading section-heading-inverse">
+<p class="section-kicker section-kicker-light">How it works</p>
+<h2>As simple as 1, 2, 3.</h2>
+<p class="section-subtitle">
+              You don't need to memorize Perl parameters. Turbo IMAP builds the commands, validates the fields and tracks every step.
             </p>
-          </div>
-
-          <div class="steps">
-            <article class="step">
-              <span class="step-number">1</span>
-              <h3>Baixe e abra</h3>
-              <p>
-                Instale no Windows ou use o pacote do Linux/macOS. No Windows, o Perl já vem
-                incluído.
+</div>
+<div class="steps">
+<article class="step">
+<span class="step-number">1</span>
+<h3>Download and open</h3>
+<p>
+                Install on Windows or use the Linux/macOS package. On Windows, Perl is already included.
               </p>
-            </article>
-            <article class="step">
-              <span class="step-number">2</span>
-              <h3>Informe as contas</h3>
-              <p>
-                Diga qual é o servidor de origem e o destino — outra conta IMAP, uma pasta
-                local ou o Thunderbird.
+</article>
+<article class="step">
+<span class="step-number">2</span>
+<h3>Enter the accounts</h3>
+<p>
+                Specify the source server and destination — another IMAP account, a local folder or Thunderbird.
               </p>
-            </article>
-            <article class="step">
-              <span class="step-number">3</span>
-              <h3>Escolha o que copiar</h3>
-              <p>
-                Selecione pastas, datas e opções de retomada. O app valida tudo antes de
-                executar.
+</article>
+<article class="step">
+<span class="step-number">3</span>
+<h3>Choose what to copy</h3>
+<p>
+                Select folders, dates and resume options. The app validates everything before running.
               </p>
-            </article>
-            <article class="step">
-              <span class="step-number">4</span>
-              <h3>Acompanhe e guarde</h3>
-              <p>
-                Veja o resumo, o progresso e o log. Ao final, o backup está pronto para ser
-                guardado ou aberto no Thunderbird.
+</article>
+<article class="step">
+<span class="step-number">4</span>
+<h3>Track and keep</h3>
+<p>
+                Watch the summary, progress and log. When it finishes, the backup is ready to keep or open in Thunderbird.
               </p>
-            </article>
-          </div>
-        </div>
-      </section>
-
-      <section class="section section-white" id="thunderbird">
-        <div class="container">
-          <div class="columns is-variable is-7 is-vcentered">
-            <div class="column is-6">
-              <p class="section-kicker">Thunderbird</p>
-              <h2>Backup que abre direto no seu Thunderbird.</h2>
-              <p class="section-subtitle section-subtitle-left">
-                O Thunderbird usa Mbox como formato nativo das Pastas Locais. O Turbo IMAP
-                exporta uma pasta IMAP por arquivo Mbox, preservando o conteúdo das
-                mensagens.
+</article>
+</div>
+</div>
+</section>
+<section class="section section-white" id="thunderbird">
+<div class="container">
+<div class="columns is-variable is-7 is-vcentered">
+<div class="column is-6">
+<p class="section-kicker">Thunderbird</p>
+<h2>A backup that opens directly in Thunderbird.</h2>
+<p class="section-subtitle section-subtitle-left">
+                Thunderbird uses Mbox as the native format for Local Folders. Turbo IMAP exports one IMAP folder per Mbox file, preserving message content.
               </p>
-              <ol class="steps-list">
-                <li>Feche o Thunderbird completamente.</li>
-                <li>
-                  No Turbo IMAP, use como destino a pasta
-                  <code>Mail\Local Folders</code> do perfil.
+<ol class="steps-list">
+<li>Close Thunderbird completely.</li>
+<li>
+                  In Turbo IMAP, use the profile's
+                  <code>Mail\Local Folders</code> profile.
                 </li>
-                <li>
-                  Mantenha um prefixo como <code>TurboIMAP-</code> para não sobrescrever
-                  pastas existentes.
+<li>
+                  Keep a prefix such as <code>TurboIMAP-</code> to avoid overwriting existing folders.
                 </li>
-                <li>Execute o backup e abra o Thunderbird.</li>
-                <li>
-                  As pastas aparecem em <strong>Pastas locais</strong> como
+<li>Run the backup and open Thunderbird.</li>
+<li>
+                  The folders appear under <strong>Local Folders</strong> as
                   <code>TurboIMAP-INBOX</code>, <code>TurboIMAP-Sent</code>, etc.
                 </li>
-              </ol>
-              <p class="section-note">
-                Prefere importar depois? Use a extensão
-                <strong>ImportExportTools NG</strong> e importe os arquivos Mbox pelas
-                Pastas Locais.
+</ol>
+<p class="section-note">
+                Prefer to import later? Use the
+                <strong>ImportExportTools NG</strong> and import the Mbox files from Local Folders.
               </p>
-            </div>
-            <div class="column is-6">
-              <figure class="content-figure">
-                <img
-                  src="assets/thunderbird-instructions.png"
-                  alt="Instruções do Turbo IMAP para carregar mensagens no Thunderbird usando Pastas Locais ou ImportExportTools NG"
-                  width="890"
-                  height="335"
-                  loading="lazy"
-                >
-                <figcaption>
-                  Instruções integradas na ferramenta de backup para Thunderbird.
+</div>
+<div class="column is-6">
+<figure class="content-figure">
+<img alt="Turbo IMAP instructions for loading messages into Thunderbird using Local Folders or ImportExportTools NG" height="335" loading="lazy" src="assets/thunderbird-instructions-en.png" width="890"/>
+<figcaption>
+                  Built-in instructions in the Thunderbird backup tool.
                 </figcaption>
-              </figure>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section class="section section-light" id="capturas">
-        <div class="container">
-          <div class="section-heading">
-            <p class="section-kicker">Interface</p>
-            <h2>Feito para quem não quer usar a linha de comando.</h2>
-            <p class="section-subtitle">
-              Formulários guiados, resumo amigável e o terminal completo disponível quando
-              você precisar.
+</figure>
+</div>
+</div>
+</div>
+</section>
+<section class="section section-light" id="capturas">
+<div class="container">
+<div class="section-heading">
+<p class="section-kicker">Interface</p>
+<h2>Made for people who don't want to use the command line.</h2>
+<p class="section-subtitle">
+              Guided forms, a friendly summary and the complete terminal when you need it.
             </p>
-          </div>
-
-          <div class="columns is-variable is-6 is-vcentered">
-            <div class="column is-7">
-              <figure class="content-figure">
-                <img
-                  src="assets/screenshot-summary.png"
-                  alt="Resumo da execução do Turbo IMAP com mensagens copiadas, pastas, duração, resultado e atividades recentes"
-                  width="1200"
-                  height="741"
-                  loading="lazy"
-                >
-                <figcaption>
-                  Resumo de mensagens, pastas, duração e resultado, com o processamento
-                  completo em um bloco recolhido.
+</div>
+<div class="columns is-variable is-6 is-vcentered">
+<div class="column is-7">
+<figure class="content-figure">
+<img alt="Turbo IMAP execution summary with copied messages, folders, duration, result and recent activity" height="741" loading="lazy" src="assets/screenshot-summary-en.png" width="1200"/>
+<figcaption>
+                  Summary of messages, folders, duration and result, with the full processing output in a collapsible block.
                 </figcaption>
-              </figure>
-            </div>
-            <div class="column is-5">
-              <ul class="check-list">
-                <li>Resumo claro do que foi processado</li>
-                <li>Barra de progresso e atividades recentes</li>
-                <li>Terminal completo em <strong>Ver processamento</strong></li>
-                <li>Histórico local por ferramenta</li>
-                <li>Logs gravados para auditoria e solução de problemas</li>
-                <li>Configurações e credenciais salvas localmente</li>
-              </ul>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section class="section section-white" id="downloads">
-        <div class="container">
-          <div class="section-heading">
-            <p class="section-kicker">Downloads</p>
-            <h2>Baixe o Turbo IMAP 1.1.0.</h2>
-            <p class="section-subtitle">
-              Escolha o sistema operacional. Todos os arquivos estão na release oficial do
-              GitHub.
+</figure>
+</div>
+<div class="column is-5">
+<ul class="check-list">
+<li>Clear summary of what was processed</li>
+<li>Progress bar and recent activity</li>
+<li>Complete terminal under <strong>View processing</strong></li>
+<li>Local history per tool</li>
+<li>Logs saved for auditing and troubleshooting</li>
+<li>Settings and credentials saved locally</li>
+</ul>
+</div>
+</div>
+</div>
+</section>
+<section class="section section-white" id="downloads">
+<div class="container">
+<div class="section-heading">
+<p class="section-kicker">Downloads</p>
+<h2>Download Turbo IMAP 1.1.0.</h2>
+<p class="section-subtitle">
+              Choose your operating system. All files are on the official GitHub release.
             </p>
-          </div>
-
-          <div class="download-grid">
-            <article class="download-card">
-              <div class="download-head">
-                <span class="os-badge os-windows" aria-hidden="true">Win</span>
-                <div>
-                  <h3>Windows</h3>
-                  <p>Windows 10/11 · x64</p>
-                </div>
-              </div>
-              <p class="download-desc">
-                Instalador NSIS. Inclui Strawberry Perl portátil e SQLite nativo.
+</div>
+<div class="download-grid">
+<article class="download-card">
+<div class="download-head">
+<span aria-hidden="true" class="os-badge os-windows">Win</span>
+<div>
+<h3>Windows</h3>
+<p>Windows 10/11 · x64</p>
+</div>
+</div>
+<p class="download-desc">
+                NSIS installer. Includes portable Strawberry Perl and native SQLite.
               </p>
-              <p class="file-meta">Turbo.IMAP.Setup.1.1.0.exe · 159 MB</p>
-              <a
-                class="button is-primary is-fullwidth"
-                href="https://github.com/emileite/turbo-imap/releases/download/v1.1.0/Turbo.IMAP.Setup.1.1.0.exe"
-                rel="noopener"
-              >
-                Baixar para Windows
+<p class="file-meta">Turbo.IMAP.Setup.1.1.0.exe · 159 MB</p>
+<a class="button is-primary is-fullwidth" href="https://github.com/emileite/turbo-imap/releases/download/v1.1.0/Turbo.IMAP.Setup.1.1.0.exe" rel="noopener">
+                Download for Windows
               </a>
-            </article>
-
-            <article class="download-card">
-              <div class="download-head">
-                <span class="os-badge os-linux" aria-hidden="true">Linux</span>
-                <div>
-                  <h3>Linux</h3>
-                  <p>Distribuições x64 · AppImage</p>
-                </div>
-              </div>
-              <p class="download-desc">
-                AppImage portátil. Requer <code>perl</code> no <code>PATH</code>.
+</article>
+<article class="download-card">
+<div class="download-head">
+<span aria-hidden="true" class="os-badge os-linux">Linux</span>
+<div>
+<h3>Linux</h3>
+<p>x64 distributions · AppImage</p>
+</div>
+</div>
+<p class="download-desc">
+                Portable AppImage. Requires <code>perl</code> in <code>PATH</code>.
               </p>
-              <p class="file-meta">Turbo.IMAP-1.1.0.AppImage · 127 MB</p>
-              <a
-                class="button is-primary is-fullwidth"
-                href="https://github.com/emileite/turbo-imap/releases/download/v1.1.0/Turbo.IMAP-1.1.0.AppImage"
-                rel="noopener"
-              >
-                Baixar para Linux
+<p class="file-meta">Turbo.IMAP-1.1.0.AppImage · 127 MB</p>
+<a class="button is-primary is-fullwidth" href="https://github.com/emileite/turbo-imap/releases/download/v1.1.0/Turbo.IMAP-1.1.0.AppImage" rel="noopener">
+                Download for Linux
               </a>
-            </article>
-
-            <article class="download-card">
-              <div class="download-head">
-                <span class="os-badge os-mac" aria-hidden="true">Mac</span>
-                <div>
-                  <h3>macOS Intel</h3>
-                  <p>Macs com processador Intel</p>
-                </div>
-              </div>
-              <p class="download-desc">
-                Zip do aplicativo. Requer <code>perl</code> no <code>PATH</code>.
+</article>
+<article class="download-card">
+<div class="download-head">
+<span aria-hidden="true" class="os-badge os-mac">Mac</span>
+<div>
+<h3>macOS Intel</h3>
+<p>Macs with Intel processors</p>
+</div>
+</div>
+<p class="download-desc">
+                Application zip. Requires <code>perl</code> in <code>PATH</code>.
               </p>
-              <p class="file-meta">Turbo.IMAP-1.1.0-mac.zip · 373 MB</p>
-              <a
-                class="button is-primary is-fullwidth"
-                href="https://github.com/emileite/turbo-imap/releases/download/v1.1.0/Turbo.IMAP-1.1.0-mac.zip"
-                rel="noopener"
-              >
-                Baixar para macOS Intel
+<p class="file-meta">Turbo.IMAP-1.1.0-mac.zip · 373 MB</p>
+<a class="button is-primary is-fullwidth" href="https://github.com/emileite/turbo-imap/releases/download/v1.1.0/Turbo.IMAP-1.1.0-mac.zip" rel="noopener">
+                Download for macOS Intel
               </a>
-            </article>
-
-            <article class="download-card">
-              <div class="download-head">
-                <span class="os-badge os-mac" aria-hidden="true">Mac</span>
-                <div>
-                  <h3>macOS Apple Silicon</h3>
-                  <p>Macs com chip M1, M2, M3 ou superior</p>
-                </div>
-              </div>
-              <p class="download-desc">
-                Zip do aplicativo. Requer <code>perl</code> no <code>PATH</code>.
+</article>
+<article class="download-card">
+<div class="download-head">
+<span aria-hidden="true" class="os-badge os-mac">Mac</span>
+<div>
+<h3>macOS Apple Silicon</h3>
+<p>Macs with M1, M2, M3 or newer chips</p>
+</div>
+</div>
+<p class="download-desc">
+                Application zip. Requires <code>perl</code> in <code>PATH</code>.
               </p>
-              <p class="file-meta">Turbo.IMAP-1.1.0-arm64-mac.zip · 362 MB</p>
-              <a
-                class="button is-primary is-fullwidth"
-                href="https://github.com/emileite/turbo-imap/releases/download/v1.1.0/Turbo.IMAP-1.1.0-arm64-mac.zip"
-                rel="noopener"
-              >
-                Baixar para Apple Silicon
+<p class="file-meta">Turbo.IMAP-1.1.0-arm64-mac.zip · 362 MB</p>
+<a class="button is-primary is-fullwidth" href="https://github.com/emileite/turbo-imap/releases/download/v1.1.0/Turbo.IMAP-1.1.0-arm64-mac.zip" rel="noopener">
+                Download for Apple Silicon
               </a>
-            </article>
-          </div>
-
-          <div class="download-notes">
-            <p>
-              <strong>Observações:</strong> no Linux, torne o AppImage executável com
-              <code>chmod +x</code>. Os pacotes macOS são zips sem assinatura digital; o
-              Gatekeeper pode solicitar confirmação. O instalador Windows também não é
-              assinado, então o SmartScreen pode exibir um aviso.
+</article>
+</div>
+<div class="download-notes">
+<p>
+<strong>Notes:</strong> on Linux, make the AppImage executable with
+              <code>chmod +x</code>. macOS packages are unsigned zips; Gatekeeper may ask for confirmation. The Windows installer is also unsigned, so SmartScreen may show a warning.
             </p>
-            <p class="download-links">
-              <a
-                href="https://github.com/emileite/turbo-imap/releases/tag/v1.1.0"
-                target="_blank"
-                rel="noopener"
-              >
-                Ver release completa
+<p class="download-links">
+<a href="https://github.com/emileite/turbo-imap/releases/tag/v1.1.0" rel="noopener" target="_blank">
+                View full release
               </a>
-              <span aria-hidden="true">·</span>
-              <a
-                href="https://github.com/emileite/turbo-imap/releases/download/v1.1.0/SHA256SUMS-1.1.0.txt"
-                target="_blank"
-                rel="noopener"
-              >
-                Checksums SHA-256
+<span aria-hidden="true">·</span>
+<a href="https://github.com/emileite/turbo-imap/releases/download/v1.1.0/SHA256SUMS-1.1.0.txt" rel="noopener" target="_blank">
+                SHA-256 checksums
               </a>
-              <span aria-hidden="true">·</span>
-              <a href="https://github.com/emileite/turbo-imap/releases" target="_blank" rel="noopener">
-                Todas as versões
+<span aria-hidden="true">·</span>
+<a href="https://github.com/emileite/turbo-imap/releases" rel="noopener" target="_blank">
+                All versions
               </a>
-            </p>
-          </div>
-        </div>
-      </section>
-
-      <section class="section section-light" id="faq">
-        <div class="container">
-          <div class="section-heading">
-            <p class="section-kicker">Perguntas frequentes</p>
-            <h2>Dúvidas comuns sobre backup de e-mail.</h2>
-          </div>
-
-          <div class="faq-list">
-            <details class="faq-item">
-              <summary>O Turbo IMAP funciona com Gmail, Outlook e Yahoo Mail?</summary>
-              <p>
-                Sim. O aplicativo funciona com qualquer conta que permita acesso por IMAP ou
-                POP3, incluindo Gmail, Outlook/Microsoft 365, Yahoo Mail, iCloud Mail, Zoho
-                Mail e Fastmail. O provedor pode exigir senha de aplicativo ou autenticação
-                OAuth2.
+</p>
+</div>
+</div>
+</section>
+<section class="section section-light" id="faq">
+<div class="container">
+<div class="section-heading">
+<p class="section-kicker">Frequently asked questions</p>
+<h2>Common questions about email backup.</h2>
+</div>
+<div class="faq-list">
+<details class="faq-item">
+<summary>Does Turbo IMAP work with Gmail, Outlook and Yahoo Mail?</summary>
+<p>
+                Yes. The app works with any account that allows IMAP or POP3, including Gmail, Outlook/Microsoft 365, Yahoo Mail, iCloud Mail, Zoho Mail and Fastmail. The provider may require an app password or OAuth2 authentication.
               </p>
-            </details>
-            <details class="faq-item">
-              <summary>Preciso instalar Perl para usar o Turbo IMAP?</summary>
-              <p>
-                No Windows, não: o instalador inclui o Strawberry Perl portátil. No Linux e
-                no macOS, é necessário ter o <code>perl</code> disponível no
+</details>
+<details class="faq-item">
+<summary>Do I need to install Perl to use Turbo IMAP?</summary>
+<p>
+                On Windows, no: the installer includes portable Strawberry Perl. On Linux and macOS, you need <code>perl</code> available in
                 <code>PATH</code>.
               </p>
-            </details>
-            <details class="faq-item">
-              <summary>Meus e-mails ou senhas são enviados para algum servidor do Turbo IMAP?</summary>
-              <p>
-                Não. O processamento acontece no seu computador. As credenciais ficam no
-                banco SQLite local, protegidas pelo <code>safeStorage</code> do Electron
-                quando disponível, e não são enviadas para servidores do projeto.
+</details>
+<details class="faq-item">
+<summary>Are my emails or passwords sent to any Turbo IMAP server?</summary>
+<p>
+                No. Processing happens on your computer. Credentials are stored in the local SQLite database, protected by <code>safeStorage</code> of Electron when available, and are not sent to project servers.
               </p>
-            </details>
-            <details class="faq-item">
-              <summary>Consigo fazer backup de apenas um período de mensagens?</summary>
-              <p>
-                Sim. As ferramentas de cópia e backup aceitam data inicial e data final no
-                formato <code>DD-MMM-YYYY</code>, permitindo exportar apenas o intervalo
-                desejado.
+</details>
+<details class="faq-item">
+<summary>Can I back up only a specific period of messages?</summary>
+<p>
+                Yes. Copy and backup tools accept start and end dates in <code>DD-MMM-YYYY</code>, allowing you to export only the desired range.
               </p>
-            </details>
-            <details class="faq-item">
-              <summary>O backup pode ser aberto no Thunderbird?</summary>
-              <p>
-                Sim. O Turbo IMAP exporta arquivos Mbox no formato nativo das Pastas Locais
-                do Thunderbird. Também é possível importar os arquivos com a extensão
-                ImportExportTools NG.
+</details>
+<details class="faq-item">
+<summary>Can the backup be opened in Thunderbird?</summary>
+<p>
+                Yes. Turbo IMAP exports Mbox files in Thunderbird's native Local Folders format. You can also import the files with the ImportExportTools NG extension.
               </p>
-            </details>
-            <details class="faq-item">
-              <summary>O Turbo IMAP é gratuito?</summary>
-              <p>
-                Sim. O aplicativo é open source e distribuído sob a licença MIT. Os scripts
-                Perl originais mantêm a licença da suíte
-                <a href="https://github.com/rick-sanders/imap-tools" target="_blank" rel="noopener">
+</details>
+<details class="faq-item">
+<summary>Is Turbo IMAP free?</summary>
+<p>
+                Yes. The app is open source and distributed under the MIT license. The original Perl scripts keep the license of the
+                <a href="https://github.com/rick-sanders/imap-tools" rel="noopener" target="_blank">
                   rick-sanders-imap-tools
                 </a>.
               </p>
-            </details>
-          </div>
-        </div>
-      </section>
-
-      <section class="section section-cta">
-        <div class="container">
-          <div class="cta-box">
-            <div>
-              <p class="section-kicker section-kicker-light">Comece agora</p>
-              <h2>Pronto para proteger seu histórico de e-mail?</h2>
-              <p>
-                Baixe o Turbo IMAP, informe sua conta e faça uma cópia local das mensagens
-                que importam.
+</details>
+</div>
+</div>
+</section>
+<section class="section section-cta">
+<div class="container">
+<div class="cta-box">
+<div>
+<p class="section-kicker section-kicker-light">Start now</p>
+<h2>Ready to protect your email history?</h2>
+<p>
+                Download Turbo IMAP, enter your account and make a local copy of the messages that matter.
               </p>
-            </div>
-            <div class="cta-actions">
-              <a
-                class="button is-light is-medium"
-                href="https://github.com/emileite/turbo-imap/releases/download/v1.1.0/Turbo.IMAP.Setup.1.1.0.exe"
-                rel="noopener"
-              >
-                Baixar para Windows
+</div>
+<div class="cta-actions">
+<a class="button is-light is-medium" href="https://github.com/emileite/turbo-imap/releases/download/v1.1.0/Turbo.IMAP.Setup.1.1.0.exe" rel="noopener">
+                Download for Windows
               </a>
-              <a class="button is-cta-outline is-medium" href="#downloads">Outros sistemas</a>
-            </div>
-          </div>
-        </div>
-      </section>
-    </main>
-
-    <footer class="footer landing-footer">
-      <div class="container">
-        <div class="columns is-variable is-6">
-          <div class="column is-5">
-            <a class="footer-brand" href="#topo">
-              <img src="assets/logo.png" alt="Logo do Turbo IMAP" width="44" height="44">
-              <span>Turbo IMAP</span>
-            </a>
-            <p class="footer-tagline">
-              Backup, migração e manutenção de contas de e-mail IMAP e POP3. Seu histórico,
-              no seu computador.
+<a class="button is-cta-outline is-medium" href="#downloads">Other platforms</a>
+</div>
+</div>
+</div>
+</section>
+</main>
+<footer class="footer landing-footer">
+<div class="container">
+<div class="columns is-variable is-6">
+<div class="column is-5">
+<a class="footer-brand" href="#topo">
+<img alt="Turbo IMAP logo" height="44" src="assets/logo.png" width="44"/>
+<span>Turbo IMAP</span>
+</a>
+<p class="footer-tagline">
+              Backup, migration and maintenance for IMAP and POP3 email accounts. Your history, on your computer.
             </p>
-          </div>
-          <div class="column is-3">
-            <h3>Projeto</h3>
-            <ul>
-              <li><a href="https://github.com/emileite/turbo-imap" target="_blank" rel="noopener">GitHub</a></li>
-              <li><a href="https://github.com/emileite/turbo-imap/releases" target="_blank" rel="noopener">Releases</a></li>
-              <li><a href="https://github.com/emileite/turbo-imap/issues" target="_blank" rel="noopener">Issues</a></li>
-              <li><a href="https://github.com/emileite/turbo-imap#readme" target="_blank" rel="noopener">Documentação</a></li>
-            </ul>
-          </div>
-          <div class="column is-4">
-            <h3>Créditos</h3>
-            <p class="footer-credits">
-              Interface com Electron, Bulma e SQLite. Scripts Perl da suíte
-              <a href="https://github.com/rick-sanders/imap-tools" target="_blank" rel="noopener">
+</div>
+<div class="column is-3">
+<h3>Project</h3>
+<ul>
+<li><a href="https://github.com/emileite/turbo-imap" rel="noopener" target="_blank">GitHub</a></li>
+<li><a href="https://github.com/emileite/turbo-imap/releases" rel="noopener" target="_blank">Releases</a></li>
+<li><a href="https://github.com/emileite/turbo-imap/issues" rel="noopener" target="_blank">Issues</a></li>
+<li><a href="https://github.com/emileite/turbo-imap#readme" rel="noopener" target="_blank">Documentation</a></li>
+</ul>
+</div>
+<div class="column is-4">
+<h3>Credits</h3>
+<p class="footer-credits">
+              Interface built with Electron, Bulma and SQLite. Perl scripts from the suite
+              <a href="https://github.com/rick-sanders/imap-tools" rel="noopener" target="_blank">
                 rick-sanders-imap-tools
-              </a>, criada por Rick Sanders. Runtime Windows com Strawberry Perl.
+              </a>, created by Rick Sanders. Windows runtime with Strawberry Perl.
             </p>
-          </div>
-        </div>
-        <div class="footer-bottom">
-          <p>© <span id="year">2026</span> Turbo IMAP · Licença MIT</p>
-          <p>Não afiliado a Gmail, Microsoft, Yahoo ou outros provedores citados.</p>
-        </div>
-      </div>
-    </footer>
-
-    <script src="app.js" defer></script>
-  </body>
+</div>
+</div>
+<div class="footer-bottom">
+<p>© <span id="year">2026</span> Turbo IMAP · MIT License</p>
+<p>Not affiliated with Gmail, Microsoft, Yahoo or other providers mentioned.</p>
+</div>
+</div>
+</footer>
+<script defer="" src="app.js"></script>
+</body>
 </html>
