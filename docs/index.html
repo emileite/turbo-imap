@@ -11,7 +11,15 @@
 <meta content="index, follow, max-image-preview:large" name="robots"/>
 <meta content="#0b1f33" name="theme-color"/>
 <meta content="telephone=no" name="format-detection"/>
-<meta content="default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; script-src 'self' 'nonce-turboimap-jsonld'; font-src 'self'; connect-src 'none'; object-src 'none'; base-uri 'self'; form-action 'none'" http-equiv="Content-Security-Policy"/>
+<meta content="default-src 'self'; img-src 'self' data: https://www.google-analytics.com https://www.googletagmanager.com https://*.google-analytics.com; style-src 'self' 'unsafe-inline'; script-src 'self' 'nonce-turboimap-jsonld' https://www.googletagmanager.com https://www.google-analytics.com; font-src 'self'; connect-src 'self' https://www.google-analytics.com https://*.google-analytics.com https://*.analytics.google.com https://analytics.google.com https://www.googletagmanager.com; object-src 'none'; base-uri 'self'; form-action 'none'" http-equiv="Content-Security-Policy"/>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-HWXTK1QFFQ"></script>
+    <script nonce="turboimap-jsonld">
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-HWXTK1QFFQ');
+    </script>
 <link href="https://emileite.github.io/turbo-imap/" rel="canonical"/>
 <link href="https://emileite.github.io/turbo-imap/" hreflang="en" rel="alternate"/>
 <link href="https://emileite.github.io/turbo-imap/pt.html" hreflang="pt-BR" rel="alternate"/>
